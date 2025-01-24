@@ -1,5 +1,9 @@
 # On Converting GLSL Shaders to OBS's implementation of HLSL
 
+This guide is intended to serve as a light reference for converting existing Shadertoy or GLSL
+shaders into OBS's implementation of HLSL, for use with the (obs-shaderfilter
+plugin)[https://obsproject.com/forum/resources/obs-shaderfilter.1736/] v2.4.1+.
+
 If you found a really cool shader on Shadertoy.com or in StreamFX or elsewhere and you'd like to use
 it in your OBS production, these notes may help you do that. I'll keep uploading examples (which
 you're free to download and use if you like!) as I do conversions myself, as well as updating this
