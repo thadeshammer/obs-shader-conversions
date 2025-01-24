@@ -1,8 +1,10 @@
 // Created by anatole duprat - XT95/2013
 // https://www.shadertoy.com/view/MdX3zr
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-// Converted for OBS by thadeshammer - 2025.01.24
+
+// Converted for OBS by thades - 2025.01.24
 // https://twitch.tv/thadeshammer
+// https://github.com/thadeshammer/obs-shader-conversions
 
 #define mix lerp
 
