@@ -1,36 +1,42 @@
 // Created by anatole duprat - XT95/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+// Converted for OBS by thadeshammer - 2025.01.24
 
-float noise(vec3 p) //Thx to Las^Mercury
+#define mix lerp
+
+float noise(float3 p) //Thx to Las^Mercury
 {
-	vec3 i = floor(p);
-	vec4 a = dot(i, vec3(1., 57., 21.)) + vec4(0., 57., 21., 78.);
-	vec3 f = cos((p-i)*acos(-1.))*(-.5)+.5;
+	float3 i = floor(p);
+	float4 a = dot(i, float3(1., 57., 21.)) + float4(0., 57., 21., 78.);
+	float3 f = cos((p-i)*acos(-1.))*(-.5)+.5;
 	a = mix(sin(cos(a)*a),sin(cos(1.+a)*(1.+a)), f.x);
 	a.xy = mix(a.xz, a.yw, f.y);
 	return mix(a.x, a.y, f.z);
 }
 
-float sphere(vec3 p, vec4 spr)
+float sphere(float3 p, float4 spr)
 {
 	return length(spr.xyz-p) - spr.w;
 }
 
-float flame(vec3 p)
+float flame(float3 p)
 {
-	float d = sphere(p*vec3(1.,.5,1.), vec4(.0,-1.,.0,1.));
-	return d + (noise(p+vec3(.0,iTime*2.,.0)) + noise(p*3.)*.5)*.25*(p.y) ;
+	float d = sphere(p*float3(1.,.5,1.), float4(.0,-1.,.0,1.));
+	return d + (noise(p+float3(.0,elapsed_time*2.,.0)) + noise(p*3.)*.5)*.25*(p.y) ;
 }
 
-float scene(vec3 p)
+float scene(float3 p)
 {
 	return min(100.-length(p) , abs(flame(p)) );
 }
 
-vec4 raymarch(vec3 org, vec3 dir)
+float4 raymarch(float3 org, float3 dir)
 {
-	float d = 0.0, glow = 0.0, eps = 0.02;
-	vec3  p = org;
+	float d = 0.0;
+    float glow = 0.0;
+    float eps = 0.02;
+
+	float3  p = org;
 	bool glowed = false;
 	
 	for(int i=0; i<64; i++)
@@ -45,23 +51,28 @@ vec4 raymarch(vec3 org, vec3 dir)
        			glow = float(i)/64.;
 		}
 	}
-	return vec4(p,glow);
+	return float4(p,glow);
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+float4 mainImage( VertData v_in ) : TARGET
 {
-	vec2 v = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;
-	v.x *= iResolution.x/iResolution.y;
+	float2 v = -1.0 + 2.0 * v_in.pos.xy / uv_size.xy;
+	v.x *= uv_size.x/uv_size.y;
 	
-	vec3 org = vec3(0., -2., 4.);
-	vec3 dir = normalize(vec3(v.x*1.6, -v.y, -1.5));
+	float3 org = float3(0., -2., 4.);
+	float3 dir = normalize(float3(v.x*1.6, -v.y, -1.5));
 	
-	vec4 p = raymarch(org, dir);
+	float4 p = raymarch(org, dir);
 	float glow = p.w;
 	
-	vec4 col = mix(vec4(1.,.5,.1,1.), vec4(0.1,.5,1.,1.), p.y*.02+.4);
+	float4 col = mix(float4(1.,.5,.1,1.), float4(0.1,.5,1.,1.), p.y*.02+.4);
 	
-	fragColor = mix(vec4(0.), col, pow(glow*2.,4.));
-	//fragColor = mix(vec4(1.), mix(vec4(1.,.5,.1,1.),vec4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));
+    float val = pow(glow*2.,4.);
+    float4 zed = float4(0., 0., 0., 0.);
+    float4 ret = mix(zed, col, val);
 
+    return ret;
+	// return mix(float4(0.), col, pow(glow*2.,4.));
+	//fragColor = mix(float4(1.), mix(float4(1.,.5,.1,1.),float4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));
+    //return float4(0.0, 0.0, 0.0, 0.0);
 }
