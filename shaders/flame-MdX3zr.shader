@@ -69,6 +69,10 @@ uniform float tiltZ<
     float step = 0.1;
 > = -1.5; // Forward "tilt" of the rays
 
+uniform bool invert_it<
+    string label = "Invert";
+>;
+
 // best guesses about epsilon or epsilon usage in the raymarch() function:
 // epsilon is used to adjust distance for marching, ensuring raymarch doesn't stop too early by
 // slightly inflating the distance returned by scene()
@@ -158,7 +162,14 @@ float4 raymarch(float3 org, float3 dir)
 
 float4 mainImage( VertData v_in ) : TARGET
 {
-	float2 v = -1.0 + 2.0 * float2(v_in.pos.x, uv_size.y - v_in.pos.y) / uv_size.xy;
+    float2 y_orientation;
+    if (invert_it) {
+        y_orientation = float2(v_in.pos.x, v_in.pos.y);
+    } else {
+        y_orientation = float2(v_in.pos.x, uv_size.y - v_in.pos.y);
+    }
+
+	float2 v = -1.0 + 2.0 * y_orientation / uv_size.xy;
 	v.x *= uv_size.x/uv_size.y;
 	
     // ray origin

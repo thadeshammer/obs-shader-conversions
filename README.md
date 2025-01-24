@@ -5,6 +5,10 @@ it in your OBS production, these notes may help you do that. I'll keep uploading
 you're free to download and use if you like!) as I do conversions myself, as well as updating this
 guide as I learn more.
 
+This is not a guide to teach you how to write shaders or even to ease the passage into learing any
+of the shader langauges. This is, at best, a quick reference for folks who are familiar with the
+space, or at least, unafraid. Be not afraid! You can do this!
+
 ## Put a comment at the top
 
 Start every source with a comment of some kind; OBS will crash if the first line is a preprocessor
