@@ -142,7 +142,27 @@ boils down to not getting the kind of wraparound behavior you're probably expect
 Arrays can't be passed into functions in OBS's implemenation of HLSL. If you encounter code doing
 this, make the array global in scope or otherwise avoid passing it at all by refactoring the code.
 
-## General Replacements
+## Matrix maths
+
+In GLSL, matrices are row-major by default for multiplication. In HLSL, they're column-major by
+default. Because the default multiplication and storage order differ, you'll often need to make
+adjustments by hand to account for these differences. (You may have to transpose the matrix.)
+
+```glsl
+// In GLSL
+vec4 result = vec4 * mat4;
+```
+
+```cpp
+// In HLSL, use mul() instead of * and order the matrix before the vector
+float4 result = mul(mat4, vec4); // Matrix is on the left in HLSL
+```
+
+NOTE that HLSL allows the programmer to explicitly set matrix storage order with the `row_major` and
+`column_major` keywords, however it's not known to me whether this is supported in OBS's
+implementation. (I haven't tried it. Let me know if you do.)
+
+## Quick Reference
 
 When you encounter the following keywords or operators in a GLSL shader you're trying to convert, replace them thus:
 
