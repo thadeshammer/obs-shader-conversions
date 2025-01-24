@@ -6,9 +6,19 @@
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
 
-uniform float num_layers = 4.;
+// NOTE if this doesn't have "User Shader Time" checked, it will run itself down to black and stop
 
-//#define SIMPLE
+uniform float num_layers<
+    string label = "Layers (4)";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 100.0;
+    float step = 0.01;
+> = 4.;
+
+uniform bool SIMPLE<
+    string label = "Simple Mode";
+>;
 
 #define mix         lerp
 #define mod(x,y)	((x) - (y) * floor((x)/(y)))
@@ -84,7 +94,7 @@ float NetLayer(float2 st, float n, float t) {
     
     float sPhase = (sin(t+n)+sin(t*.1))*.25+.5;
     sPhase += pow(sin(t*.1)*.5+.5, 50.)*5.;
-    m += sparkle*sPhase;//(*.5+.5); // commented out by the o.g. author
+    m += sparkle * sPhase;
     
     return m;
 }
@@ -114,29 +124,38 @@ float4 mainImage(VertData v_in) : TARGET
         m += fade * NetLayer(st*size-M*z, step, elapsed_time);
     }
     
-	// float fft  = texelFetch( iChannel0, float2(.7,0.), 0 ).x; // can maybe discard this, thades
-    float fft = 1.0; // for now also ignore this, thades
-    float glow = -uv.y*fft*2.;
-   
-    float3 baseCol = float3(s, cos(t*.4), -sin(t*.24))*.4+.6;
+    // original calculation
+    // float3 baseCol = float3(s, cos(t*.4), -sin(t*.24))*.4+.6;
+
+    // more pronounced brightess differences
+    float3 baseCol = float3(
+        0.5 + 0.5 * sin(t),
+        0.5 + 0.5 * cos(t * .7),
+        0.5 + 0.5 * sin(t * 1.3)
+    ) * .4 + .6;
+
     float3 col = baseCol*m;
-    col += baseCol*glow;
-    
-    // // #ifdef SIMPLE
-    // // uv *= 10.;
-    // // col = float3(1)*NetLayer(uv, 0., elapsed_time);
-    // // uv = frac(uv);
-    // // //if(uv.x>.98 || uv.y>.98) col += 1.;
-    // // #else
 
-    float inv_uv_length_squared = 1.-dot(uv,uv);
-    float3 result = float3(inv_uv_length_squared, inv_uv_length_squared, inv_uv_length_squared);
-    col = mul(col, result);
-    // col *= 1.-dot(uv,uv);
+    float fft = image.Sample(textureSampler, v_in.uv).x;
 
-    t = mod(elapsed_time, 230.);
-    col *= smoothstep(0., 20., t) * smoothstep(224., 200., t);
-    // // #endif
+    // original
+    float glow = -uv.y * fft*2.;  // original
+    col += baseCol * glow;
+
+    // more sparkly
+    // float3 glowCol = float3(fft, fft * 0.8, fft * 1.2);   
+    // col += baseCol * glowCol;
     
+    if (SIMPLE) {
+        uv *= float2(10., 10.);
+        col = float3(1., 1., 1.) * NetLayer(uv, 0., elapsed_time);
+    } else {
+        float inv_uv_length_squared = 1.-dot(uv,uv);
+        float3 result = float3(inv_uv_length_squared, inv_uv_length_squared, inv_uv_length_squared);
+
+        col = mul(col, result);
+        t = mod(elapsed_time, 230.);
+        col *= smoothstep(0., 20., t) * smoothstep(224., 200., t);
+    }
     return float4(col,1.);
 }

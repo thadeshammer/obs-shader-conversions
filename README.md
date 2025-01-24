@@ -162,20 +162,50 @@ NOTE that HLSL allows the programmer to explicitly set matrix storage order with
 `column_major` keywords, however it's not known to me whether this is supported in OBS's
 implementation. (I haven't tried it. Let me know if you do.)
 
+## iChannelN and texelFetch
+
+In GLSL, iChannelN (where N is 0, 1, 2, etc.) represents an input texture or buffer, which is
+ShaderToy specific, I believe. I _think_ I've seen shaders that essentially do this but will need to
+find them to clarify this section and my understanding.
+
+One example I saw recently is shown in `constellations-lscczl.shader` here in this repo. I was able
+to replace specificaly this:
+
+```glsl
+float fft  = texelFetch( iChannel0, float2(.7,0.), 0 ).x;
+```
+
+with this:
+
+```cpp
+float fft = image.Sample(textureSampler, v_in.uv).x;
+```
+
+- `image` is a Texture2D object bound to the shader in OBS.
+- `.Sample()` performs filtered sampling on the given texture at the given UV coordinates.
+- `textureSampler` is a SamplerState object which defines how textures are sampled. This handles
+  _how_ `image` is sampled.
+- `image.Sample(textureSampler, v_in.uv)` is the current input texture being processed by the
+  shader. If applied as a filter to a source (image, capture) then `image` refers to that source; if
+  applied to the entire scene, `image` represents the full composited scene before the shader runs.
+
+As I learn more, I'll add more here.
+
 ## Quick Reference
 
 When you encounter the following keywords or operators in a GLSL shader you're trying to convert, replace them thus:
 
-| replace               | with                     | notes                                                           |
-| --------------------- | ------------------------ | --------------------------------------------------------------- |
-| `matrix_a * matrix_b` | `mul(matrix_a,matrix_b)` | Use `mul()` for matrix multiplication.                          |
-| `atan(y,x)`           | `atan(x,y)`              | The arguments are reversed here in HLSL.                        |
-| `fract()`             | `frac()                  |                                                                 |
-| `mix()`               | `lerp()                  |
-| `fragCoord`           | `v_in.pos`               | The y-axis is inverted here from GLSL, see associated section.  |
-| `iResolution`         | `uv_size`                | The y-axis is inverted here from GLSL, `fragCoord` section.     |
-| `iTime`               | `elapsed_time`           |                                                                 |
-| `vecN`                | `floatN`                 | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)` |
+| replace               | with                           | notes                                                           |
+| --------------------- | ------------------------------ | --------------------------------------------------------------- |
+| `matrix_a * matrix_b` | `mul(matrix_a,matrix_b)`       | Use `mul()` for matrix multiplication.                          |
+| `atan(y,x)`           | `atan(x,y)`                    | The arguments are reversed here in HLSL.                        |
+| `fract()`             | `frac()`                       |                                                                 |
+| `mix()`               | `lerp()`                       |
+| `fragCoord`           | `v_in.pos`                     | The y-axis is inverted here from GLSL, see associated section.  |
+| `iResolution`         | `uv_size`                      | The y-axis is inverted here from GLSL, `fragCoord` section.     |
+| `iTime`               | `elapsed_time`                 |                                                                 |
+| `texelFetch(t, v, m)` | `image.Sample(textureSampler)` | See associated section.                                         |
+| `vecN`                | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)` |
 
 ## Acknowledgements
 
