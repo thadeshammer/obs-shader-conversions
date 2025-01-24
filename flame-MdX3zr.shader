@@ -56,7 +56,7 @@ float4 raymarch(float3 org, float3 dir)
 
 float4 mainImage( VertData v_in ) : TARGET
 {
-	float2 v = -1.0 + 2.0 * v_in.pos.xy / uv_size.xy;
+	float2 v = -1.0 + 2.0 * float2(v_in.pos.x, uv_size.y - v_in.pos.y) / uv_size.xy;
 	v.x *= uv_size.x/uv_size.y;
 	
 	float3 org = float3(0., -2., 4.);
@@ -72,7 +72,10 @@ float4 mainImage( VertData v_in ) : TARGET
     float4 ret = mix(zed, col, val);
 
     return ret;
+
+    // original return
 	// return mix(float4(0.), col, pow(glow*2.,4.));
+
+    // an alternate return that was commented out in original code
 	//fragColor = mix(float4(1.), mix(float4(1.,.5,.1,1.),float4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));
-    //return float4(0.0, 0.0, 0.0, 0.0);
 }
