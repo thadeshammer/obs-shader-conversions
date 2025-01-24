@@ -6,20 +6,104 @@
 
 #define mix lerp
 
-uniform float fovX = 1.6;   // Horizontal field of view
-uniform float tiltZ = -1.5; // Forward tilt of the rays
+uniform float4 primary_color<
+    string label = "Primary";
+> = {0.0, 0.0, 0.0, 0.0};
+
+uniform float4 flame_tip_color<
+    string label = "Flame Tip";
+> = {1.0, 0.5, 0.1, 1.0};
+
+
+uniform float4 inner_core_color<
+    string label = "Inner Core";
+> = {0.1, 0.5, 1.0, 1.0};
+
+uniform float glow_scale<
+    string label = "Glow Scale";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 10.0;
+    float step = 0.01;
+> = 2.0;
+
+uniform float glow_exponent<
+    string label = "Glow Exponent";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 10.0;
+    float step = 0.1;
+> = 4.0;
+
+uniform float intensity<
+    string label = "Mix Intensity";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 0.5;
+    float step = 0.001;
+> = .02;
+
+uniform float bias<
+    string label = "Mix Bias";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 10.0;
+    float step = 0.001;
+> = .4;
+
+uniform float fovX<
+    string label = "Squeeze";
+    string widget_type = "slider";
+    float minimum = -20.0;
+    float maximum = 20.0;
+    float step = 0.1;
+> = 1.6;   // Horizontal field of view
+
+uniform float tiltZ<
+    string label = "Zoom";
+    string widget_type = "slider";
+    float minimum = -20.0;
+    float maximum = 20.0;
+    float step = 0.1;
+> = -1.5; // Forward "tilt" of the rays
 
 // best guesses about epsilon or epsilon usage in the raymarch() function:
 // epsilon is used to adjust distance for marching, ensuring raymarch doesn't stop too early by
 // slightly inflating the distance returned by scene()
 // also used to stop the raymarch: once distance d is smaller than epsilon, the ray is
 // "close enough" to the surface or "inside" the scene geometry
-uniform float epsilon = 0.02;
+uniform float epsilon<
+    string label = "Epsilon";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 0.3;
+    float step = 0.001;
+> = 0.02;
 
-// Camera position
-uniform float cameraX = 0.0;
-uniform float cameraY = -2.0;
-uniform float cameraZ = 4.0;
+// The origin of the ray, i.e. the camera position
+uniform float cameraX<
+    string label = "Origin X";
+    string widget_type = "slider";
+    float minimum = -20.0;
+    float maximum = 20.0;
+    float step = 0.1;
+> = 0.0;
+
+uniform float cameraY<
+    string label = "Origin Y";
+    string widget_type = "slider";
+    float minimum = -20.0;
+    float maximum = 20.0;
+    float step = 0.1;
+> = -2.0;
+
+uniform float cameraZ<
+    string label = "Origin Z";
+    string widget_type = "slider";
+    float minimum = -20.0;
+    float maximum = 20.0;
+    float step = 0.1;
+> = 4.0;
 
 float noise(float3 p) //Thx to Las^Mercury
 {
@@ -49,7 +133,7 @@ float scene(float3 p)
 
 float4 raymarch(float3 org, float3 dir)
 {
-	float d = 0.0; // distance tracking
+	float d = 0.0; // ray distance tracking
     float glow = 0.0;
 
 	float3  p = org;
@@ -75,24 +159,25 @@ float4 mainImage( VertData v_in ) : TARGET
 	float2 v = -1.0 + 2.0 * float2(v_in.pos.x, uv_size.y - v_in.pos.y) / uv_size.xy;
 	v.x *= uv_size.x/uv_size.y;
 	
+    // ray origin
     float3 org = float3(cameraX, cameraY, cameraZ);
 
+    // ray direction from origin ("camera") to the scene
     float3 dir = normalize(float3(v.x * fovX, -v.y, tiltZ));
 	
 	float4 p = raymarch(org, dir);
 	float glow = p.w;
 	
-	float4 col = mix(float4(1.,.5,.1,1.), float4(0.1,.5,1.,1.), p.y*.02+.4);
+    // mix() here interpolates between two colors to create the visual glow effect
+    // factor determines the mix:
+    // - when factor is 0.0, result is 100% base color
+    // - when factor is 1.0, result is 100% inner_core_color
+    float factor = p.y * intensity + bias;
+	float4 color_blend = mix(flame_tip_color, inner_core_color, factor);
 	
-    float val = pow(glow*2.,4.);
-    float4 zed = float4(0., 0., 0., 0.);
-    float4 ret = mix(zed, col, val);
+    float glow_amp = pow(glow*glow_scale,glow_exponent); // amplify the glow effect
+
+    float4 ret = mix(primary_color, color_blend, glow_amp);
 
     return ret;
-
-    // original return
-	// return mix(float4(0.), col, pow(glow*2.,4.));
-
-    // an alternate return that was commented out in original code
-	//fragColor = mix(float4(1.), mix(float4(1.,.5,.1,1.),float4(0.1,.5,1.,1.),p.y*.02+.4), pow(glow*2.,4.));
 }
