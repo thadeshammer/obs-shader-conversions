@@ -205,12 +205,14 @@ When you encounter the following keywords or operators in a GLSL shader you're t
 
 | replace               | with                           | notes                                                           |
 | --------------------- | ------------------------------ | --------------------------------------------------------------- |
-| `matrix_a * matrix_b` | `mul(matrix_a,matrix_b)`       | Use `mul()` for matrix multiplication.                          |
+| `matrix_a * matrix_b` | `mul(matrix_a,matrix_b)`       | Use `mul()` for matrix multiplication. Mind row vs col major.   |
 | `atan(y,x)`           | `atan(x,y)`                    | The arguments are reversed here in HLSL.                        |
 | `fract()`             | `frac()`                       |                                                                 |
-| `mix()`               | `lerp()`                       |
+| `matN`                | `floatNxN`                     |                                                                 |
+| `mix()`               | `lerp()`                       |                                                                 |
 | `fragCoord`           | `v_in.pos`                     | The y-axis is inverted here from GLSL, see associated section.  |
-| `iResolution`         | `uv_size`                      | The y-axis is inverted here from GLSL, `fragCoord` section.     |
+| `gl_fragCoord`        | `v_in.pos`                     |                                                                 |
+| `iResolution`         | `uv_size`                      | The y-axis is inverted here from GLSL, see `fragCoord` section. |
 | `iTime`               | `elapsed_time`                 |                                                                 |
 | `texelFetch(t, v, m)` | `image.Sample(textureSampler)` | See associated section.                                         |
 | `vecN`                | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)` |
