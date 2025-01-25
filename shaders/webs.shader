@@ -1,12 +1,10 @@
-// The Universe Within - by Martijn Steinrucken aka BigWings 2018
+// Original by Martijn Steinrucken aka BigWings 2018
 // Email:countfrolic@gmail.com
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 // Converted for OBS by thades - 2025.01.24
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
-
-// NOTE if this doesn't have "User Shader Time" checked, it will run itself down to black and stop
 
 
 uniform float4 base_color <
