@@ -1,6 +1,6 @@
-# Shaders for Open Broadcaster Software's obs-shaderfilter plug-in
+# Shaders for the obs-shaderfilter plug-in
 
-I really enjoy using the [obs-shaderfilter
+I'm a big fan of OBS and I really enjoy using the [obs-shaderfilter
 plugin](https://obsproject.com/forum/resources/obs-shaderfilter.1736/) and really wanted more
 shaders, as well as the ability to play with the ones I had. So, why not share my efforts?
 
