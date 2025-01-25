@@ -1,4 +1,13 @@
-# On Converting GLSL Shaders to OBS's implementation of HLSL
+# Shaders for Open Broadcaster Software's obs-shaderfilter plug-in
+
+I really enjoy using the (obs-shaderfilter
+plugin)[https://obsproject.com/forum/resources/obs-shaderfilter.1736/] and really wanted more
+shaders, as well as the ability to play with the ones I had. So, why not share my efforts?
+
+Everything under `shaders/` is under variations of the Creative Commons licensure, so feel free to
+pull any or all of them down as you like and load them into your own production. Enjoy!
+
+## On Converting GLSL Shaders to OBS's implementation of HLSL
 
 This guide is intended to serve as a light reference for converting existing Shadertoy or GLSL
 shaders into OBS's implementation of HLSL, for use with the (obs-shaderfilter
@@ -13,12 +22,12 @@ This is not a guide to teach you how to write shaders or even to ease the passag
 of the shader langauges. This is, at best, a quick reference for folks who are familiar with the
 space, or at least, unafraid. Be not afraid! You can do this!
 
-## Put a comment at the top
+### Put a comment at the top
 
 Start every source with a comment of some kind; OBS will crash if the first line is a preprocessor
 directive, and this will work around it.
 
-## mainImage entry point
+### mainImage entry point
 
 In GLSL the definition for `mainImage` takes two parameters and returns nothing; the return value is
 effectively packaged in the `fragColor` parameter. It looks like this:
@@ -42,7 +51,7 @@ float4 mainImage(VertData v_in) : TARGET
 }
 ```
 
-## fragCoord and OBS's UV origin
+### fragCoord and OBS's UV origin
 
 OBS's HLSL implementation has the origin at the bottom-left, as opposed to GLSL's top-left origin.
 To account for this, if y-axis orientation matters for your shader, you'll need to handle that axis inversion.
@@ -55,7 +64,7 @@ To invert the y-axis, you can replace `v_in.pos.xy` thus:
 float2(v_in.pos.x, uv_size.y - v_in.pos.y)
 ```
 
-## Handy pre-defines
+### Handy pre-defines
 
 If the file contains any of these functions, use the associated `#define` or replace each GLSL
 method reference with its HLSL equivalent.
@@ -69,7 +78,7 @@ method reference with its HLSL equivalent.
 #endif
 ```
 
-## vecN is floatN
+### vecN is floatN
 
 In general, if you encounter vector constructions, replace it with float like this:
 
@@ -88,12 +97,12 @@ will beget you the following error message:
 
 You just need to explicitly add all of the values to fix this.
 
-## There is no const
+### There is no const
 
 Replace `const` with `#define` preprocessor directives, or you can use `uniform<>` if you want to
 surface it in the OBS UI for user adjustment.
 
-### const becomes define
+#### const becomes define
 
 ```cpp
 const int STEPS = 8;
@@ -103,17 +112,17 @@ const int STEPS = 8;
 // it's effectively just string replacement in the code that follows it.
 ```
 
-## Use uniform so the end-user can make fun adjustments
+### Use uniform so the end-user can make fun adjustments
 
 Surface constants to the OBS UI using the `uniform` keyword and angle brackets syntax. Examples follow.
 
-### Single number field with default value.
+#### Single number field with default value.
 
 ```cpp
 uniform float value = 0.0;
 ```
 
-### Color selection dialog
+#### Color selection dialog
 
 ```hlsl
 // Note the {} braces.
@@ -122,7 +131,7 @@ uniform float4 primary_color<
 > = {0.0, 0.0, 0.0, 0.0};
 ```
 
-### Slider
+#### Slider
 
 ```hlsl
 uniform float glow_scale<
@@ -134,7 +143,7 @@ uniform float glow_scale<
 > = 2.0;
 ```
 
-## modulo calculations
+### modulo calculations
 
 HLSL doesn't have `mod()` but it does have `fmod()` which is probably not what you want to GLSL's replace
 `mod()` with. `fmod()` uses `trunc()` under the hood which ignores the sign of the divisor, which
@@ -145,12 +154,12 @@ boils down to not getting the kind of wraparound behavior you're probably expect
 #define mod(x,y) ((x) - (y) \* floor((x)/(y)))
 ```
 
-## Arrays can't be function parameters
+### Arrays can't be function parameters
 
 Arrays can't be passed into functions in OBS's implemenation of HLSL. If you encounter code doing
 this, make the array global in scope or otherwise avoid passing it at all by refactoring the code.
 
-## Matrix maths
+### Matrix maths
 
 In GLSL, matrices are row-major by default for multiplication. In HLSL, they're column-major by
 default. Because the default multiplication and storage order differ, you'll often need to make
@@ -170,7 +179,7 @@ NOTE that HLSL allows the programmer to explicitly set matrix storage order with
 `column_major` keywords, however it's not known to me whether this is supported in OBS's
 implementation. (I haven't tried it. Let me know if you do.)
 
-## iChannelN and texelFetch
+### iChannelN and texelFetch
 
 In GLSL, iChannelN (where N is 0, 1, 2, etc.) represents an input texture or buffer, which is
 ShaderToy specific, I believe. I _think_ I've seen shaders that essentially do this but will need to
@@ -199,7 +208,7 @@ float fft = image.Sample(textureSampler, v_in.uv).x;
 
 As I learn more, I'll add more here.
 
-## Quick Reference
+### Quick Reference
 
 When you encounter the following keywords or operators in a GLSL shader you're trying to convert, replace them thus:
 
