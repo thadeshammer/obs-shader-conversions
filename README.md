@@ -1,7 +1,7 @@
 # Shaders for Open Broadcaster Software's obs-shaderfilter plug-in
 
-I really enjoy using the (obs-shaderfilter
-plugin)[https://obsproject.com/forum/resources/obs-shaderfilter.1736/] and really wanted more
+I really enjoy using the [obs-shaderfilter
+plugin](https://obsproject.com/forum/resources/obs-shaderfilter.1736/) and really wanted more
 shaders, as well as the ability to play with the ones I had. So, why not share my efforts?
 
 Everything under `shaders/` is under variations of the Creative Commons licensure, so feel free to
@@ -10,8 +10,8 @@ pull any or all of them down as you like and load them into your own production.
 ## On Converting GLSL Shaders to OBS's implementation of HLSL
 
 This guide is intended to serve as a light reference for converting existing Shadertoy or GLSL
-shaders into OBS's implementation of HLSL, for use with the (obs-shaderfilter
-plugin)[https://obsproject.com/forum/resources/obs-shaderfilter.1736/] v2.4.1+.
+shaders into OBS's implementation of HLSL, for use with the [obs-shaderfilter
+plugin](https://obsproject.com/forum/resources/obs-shaderfilter.1736/) v2.4.1+.
 
 If you found a really cool shader on Shadertoy.com or in StreamFX or elsewhere and you'd like to use
 it in your OBS production, these notes may help you do that. I'll keep uploading examples (which
