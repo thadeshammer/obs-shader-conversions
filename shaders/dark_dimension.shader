@@ -7,7 +7,11 @@
 //Turbulent fbm (aka ridged) is used for better effect.
 
 // From: https://www.shadertoy.com/view/ldlXRS
+
 // Converted by thades
+//  Parameterized practically everything that seemed fun.
+//  Replaced noise texture load with parameterized noise function.
+
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
 
@@ -17,7 +21,43 @@
 
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
-uniform float rate<
+uniform float4 base_color <
+    string label = "Color";
+> = {0.2, 0.1, 0.4, 1.0};
+
+uniform float alpha_value <
+    string label = "Alpha";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 1.0;
+    float step = 0.05;
+> = 1.0;
+
+uniform float amplitude <
+    string label = "FBM Intensity (0.1)";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 100.0;
+    float step = 0.05;
+> = 0.1;
+
+uniform float amplitude_scaling <
+    string label = "FBM amp scaling (2.0)";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 1000.0;
+    float step = 0.05;
+> = 2.0;
+
+uniform float frequency_scaling <
+    string label = "FBM frequency scaling (2.0)";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 1000.0;
+    float step = 0.05;
+> = 2.0;
+
+uniform float rate <
     string label = "Ring Rate (5.0)";
     string widget_type = "slider";
     float minimum = 0.0;
@@ -25,7 +65,7 @@ uniform float rate<
     float step = 0.05;
 > = 5.0;
 
-uniform float noise_rotation<
+uniform float noise_rotation <
     string label = "Noise Rotation (0.2)";
     string widget_type = "slider";
     float minimum = -200.0;
@@ -33,7 +73,7 @@ uniform float noise_rotation<
     float step = 0.01;
 > = 0.2;
 
-uniform float noise_jitter<
+uniform float noise_jitter <
     string label = "Noise Jitter (1.6)";
     string widget_type = "slider";
     float minimum = -200.0;
@@ -41,7 +81,7 @@ uniform float noise_jitter<
     float step = 0.1.;
 > = 1.6;
 
-uniform float noise_ripple<
+uniform float noise_ripple <
     string label = "Noise Ripple (1.7)";
     string widget_type = "slider";
     float minimum = -200.0;
@@ -118,32 +158,37 @@ float noise(float2 p) {
     return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
 }
 
+/*
+    Fractal Brownian Motion
+
+    "FBM is a technique that combines multiple layers of noise (called octaves)
+    at increasing frequencies and decreasing amplitudes. The result is visually
+    richer and more natural than single-layer noise."
+*/
 float fbm(float2 p)
 {	
-	float z=2.;
-	float rz = 0.;
-	float2 bp = p;
-	for (float i= 1.; i < 6.; i++)
+	float z=amplitude;     // amplitude scaling
+	float result_accum  = 0.;  // accumulator
+	float2 bp = p;  // base position
+
+	for (float i= 1.; i < 6.; i++) // each loop is an "octave" or layer of noise
 	{
-		rz+= abs((noise(p)-0.5)*2.)/z;
-		z = z*2.;
-		p = p*2.;
+		result_accum += abs((noise(p)-0.5)*2.)/z;
+		z *= amplitude_scaling;
+		p *= frequency_scaling;
 	}
-	return rz;
+	return result_accum;
 }
 
 float dualfbm(float2 p)
 {
     //get two rotated fbm calls and displace the domain
 	float2 p2 = p*.7;
-	//float2 basis = float2(fbm(p2-time*1.6),fbm(p2+time*1.7));
-                                    // jitter         ripple
     float2 basis = float2(fbm(p2-time*noise_jitter),fbm(p2+time*noise_ripple));
 	basis = (basis-.5)*.2;
 	p += basis;
 	
 	//coloring
-	// return fbm(mul(p, makem2(time*0.2)));
     return fbm(mul(p, makem2(time*noise_rotation)));
 }
 
@@ -168,7 +213,8 @@ float4 mainImage(VertData v_in) : TARGET
 	rz *= pow(abs((0.1-circ(p))),.9);
 	
 	//final color
-	float3 col = float3(.2, 0.1, 0.4)/rz;
-	col=pow(abs(col),float3(.99, .99, .99));
-	return float4(col,1.);
+	float4 col = base_color/rz;
+    col = pow(abs(col), float4(0.99, 0.99, 0.99, 1.));
+    col.a = alpha_value;
+	return col;
 }

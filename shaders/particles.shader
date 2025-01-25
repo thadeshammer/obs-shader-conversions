@@ -1,8 +1,8 @@
-// Created by Stephane Cuillerdier - Aiekick/2015
+// Based on creation by Stephane Cuillerdier - Aiekick/2015
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // Tuned via XShade (http://www.funparadigm.com/xshade/)
-// https://www.shadertoy.com/view/MddGWN
 
+// https://www.shadertoy.com/view/MddGWN
 // converted by thades - 2025.01.25
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
