@@ -2,6 +2,8 @@
 // Email:countfrolic@gmail.com
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
+// https://www.shadertoy.com/view/lscczl
+
 // Converted for OBS by thades - 2025.01.24
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
@@ -64,17 +66,16 @@ float N21(float2 p) {
 
 float2 GetPos(float2 id, float2 offs, float t) {
     float n = N21(id+offs);
-    float n1 = frac(n*10.);
-    float n2 = frac(n*100.);
+    float n1 = smoothstep(0.0, 1.0, frac(n * 10.0)); // Smooth out noise
+    float n2 = smoothstep(0.0, 1.0, frac(n * 100.0)); // Smooth out noise
     float a = t+n;
     return offs + float2(sin(a*n1), cos(a*n2))*.4;
 }
 
-float df_line(float2 a,float2 b,float2 p)
-{
+float df_line(float2 a, float2 b, float2 p) {
     float2 pa = p - a, ba = b - a;
-	float h = clamp(dot(pa,ba) / dot(ba,ba), 0., 1.);	
-	return length(pa - ba * h);
+    float h = clamp(dot(pa, ba) / (dot(ba, ba) + 1e-6), 0.0, 1.0); // Add epsilon to prevent 1/0
+    return length(pa - ba * h);
 }
 
 float draw_line(float2 a, float2 b, float2 uv) {
@@ -90,9 +91,9 @@ float draw_line(float2 a, float2 b, float2 uv) {
 }
 
 float NetLayer(float2 st, float n, float t) {
-    float2 id = floor(st)+n;
+    float2 id = floor(st )+ n;
 
-    st = frac(st)-.5;
+    st = st - floor(st) - 0.5;
    
     float2 p[9];
     int c=0;
