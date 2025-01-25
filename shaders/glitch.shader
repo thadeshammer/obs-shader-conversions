@@ -43,7 +43,7 @@ float insideRange(float v, float bottom, float top) {
 float4 mainImage(VertData v_in) : TARGET
 {
     
-    float time = floor(elapsed_time * SPEED * 60.0); // hardcoded for 60FPS I believe
+    float time = floor(elapsed_time * glitch_speed * 60.0); // hardcoded for 60FPS I believe
 	float2 uv = v_in.uv;
     
     //copy orig
