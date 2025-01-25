@@ -1,5 +1,5 @@
 // Noise animation - Electric
-// by nimitz (stormoid.com) (twitter: @stormoid)
+// by nimitz (stormoid.com)
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
 // Contact the author for other licensing options
 

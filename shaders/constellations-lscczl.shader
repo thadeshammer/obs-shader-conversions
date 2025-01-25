@@ -1,5 +1,5 @@
 // The Universe Within - by Martijn Steinrucken aka BigWings 2018
-// Email:countfrolic@gmail.com Twitter:@The_ArtOfCode
+// Email:countfrolic@gmail.com
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 // Converted for OBS by thades - 2025.01.24

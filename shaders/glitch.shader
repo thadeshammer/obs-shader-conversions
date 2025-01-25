@@ -1,5 +1,8 @@
 //based on https://www.shadertoy.com/view/MtXBDs
-// thades just added sliders for funsies
+
+// Added some sliders for funsies. -thades
+// https://twitch.tv/thadeshammer
+// https://github.com/thadeshammer/obs-shader-conversions
 
 //inputs
 uniform float glitch_amount<
