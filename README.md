@@ -208,6 +208,31 @@ float fft = image.Sample(textureSampler, v_in.uv).x;
 
 As I learn more, I'll add more here.
 
+### Noise Generation
+
+Many Shadertoy shaders I've seen use a pregenerated noise image that they reference. This can be
+done with obs-shaderfilter (via a `uniform texture2d`) but for simplicity I've taken to using simple
+in-shader noise generation. By nature this is inferior to the image technique, but it works well
+enough in my experience. I've taken to using a Golden Ratio indexer, adapted from [this
+StackOverflow post](https://stackoverflow.com/a/28095165/19677371).
+
+```
+// Gold Noise ©2015 dcerisano@standard3d.com
+// - based on the Golden Ratio
+// - uniform normalized distribution
+// - fastest static noise generator function (also runs at low precision)
+// - use with indicated fractional seeding method.
+
+float gold_noise(float2 xy, float seed){
+    float phi = 1.61803398874989484820459; // Φ = Golden Ratio
+    return frac(tan(distance(xy*phi, xy)*seed)*xy.x);
+}
+```
+
+You can see this in-use in `space-travel.shader`, where I also use a somewhat more complicated hash
+method from that same StackOverflow page as the seed. (You could also use `elapsed_time` for a seed,
+or the color value of the screen, or whatever you like.)
+
 ### Quick Reference
 
 When you encounter the following keywords or operators in a GLSL shader you're trying to convert, replace them thus:
