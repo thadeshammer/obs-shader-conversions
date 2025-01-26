@@ -13,20 +13,28 @@
 #define gamma_correct 2.2
 
 uniform float density_threshold <
-    string label = "Density";
+    string label = "Density (0.95)";
     string widget_type = "slider";
     float minimum = 0.0;
     float maximum = 1.0;
     float step = 0.05;
-> = 1.0;
+> = 0.95;
 
 uniform float star_tightness <
-    string label = "Slimming";
+    string label = "Slimming (101.60)";
     string widget_type = "slider";
     float minimum = 0.05;
     float maximum = 200.0;
     float step = 0.05;
-> = 190.0;
+> = 101.60;
+
+uniform int passes <
+    string label = "Passes (682)";
+    string widget_type = "slider";
+    int minimum = 1;
+    int maximum = 1000;
+    int step = 1;
+> = 680;
 
 uniform bool weird_mode <
     string label = "Weird";
@@ -96,7 +104,7 @@ float4 mainImage(VertData v_in) : TARGET
 	float3 stp = ray/max(abs(ray.x),abs(ray.y));
 	
 	float3 pos = 2.0*stp+.5;
-	for ( int i=0; i < 20; i++ )
+	for ( int i=0; i < passes; i++ )
 	{
         float seed = random(pos.x) * i;
         float z = gold_noise( float2(pos.xy), seed );
