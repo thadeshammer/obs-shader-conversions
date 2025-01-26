@@ -151,7 +151,7 @@ boils down to not getting the kind of wraparound behavior you're probably expect
 `mod()` in GLSL. Use a `#define` or proper function or otherwise do it yourself thus:
 
 ```
-#define mod(x,y) ((x) - (y) \* floor((x)/(y)))
+#define mod(x,y) ((x) - (y) * floor((x)/(y)))
 ```
 
 ### Arrays can't be function parameters
