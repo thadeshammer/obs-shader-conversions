@@ -129,6 +129,10 @@ uniform float interpolation_b <
     float step = 0.1;
 > = 2.0;
 
+uniform bool use_golden_ratio <
+    string label = "Alternate Noise Function";
+> = false;
+
 
 float2x2 makem2(float theta) {
     float c = cos(theta);
@@ -158,6 +162,12 @@ float noise(float2 p) {
     return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
 }
 
+float gold_noise(float2 xy, float seed){
+    // https://stackoverflow.com/a/28095165/19677371
+    float phi = 1.61803398874989484820459;  // Φ = Golden Ratio
+    return frac(tan(distance(xy*phi, xy)*seed)*xy.x);
+}
+
 /*
     Fractal Brownian Motion
 
@@ -173,7 +183,12 @@ float fbm(float2 p)
 
 	for (float i= 1.; i < 6.; i++) // each loop is an "octave" or layer of noise
 	{
-		result_accum += abs((noise(p)-0.5)*2.)/z;
+        if (use_golden_ratio) {
+            result_accum += abs((gold_noise(p, noise(p))-0.5)*2.)/z;
+        } else {
+            result_accum += abs((noise(p)-0.5)*2.)/z;
+        }
+
 		z *= amplitude_scaling;
 		p *= frequency_scaling;
 	}
