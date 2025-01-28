@@ -21,7 +21,7 @@ write my own yet, but the only way I'll get there is studying a lot of these.
 ## Licensing and Usage of these Shaders
 
 Check eash shader file's header for its specific licensing and permissions. Almost all of them are
-CC-SA.
+CC-SA Non-Commercial. (So, don't sell the shaders and give credit. Keep sharing em.)
 
 The [Sine Puke Shader](https://www.shadertoy.com/view/4dXXzN) has no explicit license but has the
 text "steal this" in it, which seems permissive to me, but I'd recommend non-commercial use for that
