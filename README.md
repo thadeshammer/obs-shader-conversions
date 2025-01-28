@@ -7,6 +7,26 @@ shaders, as well as the ability to play with the ones I had. So, why not share m
 Everything under `shaders/` is under variations of the Creative Commons licensure, so feel free to
 pull any or all of them down as you like and load them into your own production. Enjoy!
 
+## Acknowledgements
+
+Special thanks to SkeletonBow. Withtout their overwhelming contributions, this guide wouldn't have
+been possible. Find them [on Twitch](https://twitch.tv/skelzinator).
+
+Shaders in OBS wouldn't really be accessible to most of us without the mighty plugin author
+[Exeldro](https://github.com/exeldro) and the obs-shaderfilter project.
+
+And thanks to the authors of these shaders on Shadertoy and elsewhere. I don't really know how to
+write my own yet, but the only way I'll get there is studying a lot of these.
+
+## Licensing and Usage of these Shaders
+
+Check eash shader file's header for its specific licensing and permissions. Almost all of them are
+CC-SA.
+
+The [Sine Puke Shader](https://www.shadertoy.com/view/4dXXzN) has no explicit license but has the
+text "steal this" in it, which seems permissive to me, but I'd recommend non-commercial use for that
+specific one.
+
 ## On Converting GLSL Shaders to OBS's implementation of HLSL
 
 This guide is intended to serve as a light reference for converting existing Shadertoy or GLSL
@@ -216,7 +236,7 @@ in-shader noise generation. By nature this is inferior to the image technique, b
 enough in my experience. I've taken to using a Golden Ratio indexer, adapted from [this
 StackOverflow post](https://stackoverflow.com/a/28095165/19677371).
 
-```
+```cpp
 // Gold Noise ©2015 dcerisano@standard3d.com
 // - based on the Golden Ratio
 // - uniform normalized distribution
@@ -237,24 +257,15 @@ or the color value of the screen, or whatever you like.)
 
 When you encounter the following keywords or operators in a GLSL shader you're trying to convert, replace them thus:
 
-| replace               | with                           | notes                                                           |
-| --------------------- | ------------------------------ | --------------------------------------------------------------- |
-| `matrix_a * matrix_b` | `mul(matrix_a,matrix_b)`       | Use `mul()` for matrix multiplication. Mind row vs col major.   |
-| `atan(y,x)`           | `atan(x,y)`                    | The arguments are reversed here in HLSL.                        |
-| `fract()`             | `frac()`                       |                                                                 |
-| `matN`                | `floatNxN`                     |                                                                 |
-| `mix()`               | `lerp()`                       |                                                                 |
-| `fragCoord`           | `v_in.pos`                     | The y-axis is inverted here from GLSL, see associated section.  |
-| `gl_fragCoord`        | `v_in.pos`                     |                                                                 |
-| `iResolution`         | `uv_size`                      | The y-axis is inverted here from GLSL, see `fragCoord` section. |
-| `iTime`               | `elapsed_time`                 |                                                                 |
-| `texelFetch(t, v, m)` | `image.Sample(textureSampler)` | See associated section.                                         |
-| `vecN`                | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)` |
-
-## Acknowledgements
-
-Special thanks to SkeletonBow. Withtout their overwhelming contributions, this guide wouldn't have
-been possible. Find them [on Twitch](https://twitch.tv/skelzinator).
-
-Shaders in OBS wouldn't really be accessible to most of us without the mighty plugin author
-[Exeldro](https://github.com/exeldro).
+| replace                     | with                           | notes                                                           |
+| --------------------------- | ------------------------------ | --------------------------------------------------------------- |
+| `flt_a * matrix_b`          | `mul(flt_a, matrix_b)`         | Use `mul()` for matrix multiplication. Mind row vs col major.   |
+| `atan(y,x)`                 | `atan(x,y)`                    | The arguments are reversed here in HLSL.                        |
+| `fract()`                   | `frac()`                       |                                                                 |
+| `matN`                      | `floatNxN`                     |                                                                 |
+| `mix()`                     | `lerp()`                       |                                                                 |
+| `fragCoord`, `gl_fragCoord` | `v_in.pos`                     | The y-axis is inverted here from GLSL, see associated section.  |
+| `iResolution`               | `uv_size`                      | The y-axis is inverted here from GLSL, see `fragCoord` section. |
+| `iTime`                     | `elapsed_time`                 |                                                                 |
+| `texelFetch(t, v, m)`       | `image.Sample(textureSampler)` | See associated section.                                         |
+| `vecN`                      | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)` |
