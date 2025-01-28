@@ -78,10 +78,18 @@ To account for this, if y-axis orientation matters for your shader, you'll need 
 
 In general, `fragCoord` is replaced with `v_in.pos`.
 
-To invert the y-axis, you can replace `v_in.pos.xy` thus:
+Here's a convenience function I took to using:
 
 ```cpp
-float2(v_in.pos.x, uv_size.y - v_in.pos.y)
+float2 transform_and_normalize_uv(float2 pos) {
+    // pass this v_in.pos
+    // Moves origin to screen center, normalizes [-1., 1.] and  flip y-axis to behave like GLSL
+    float2 fragCoord = float2(pos.x, uv_size.y - pos.y); // flip y-axis
+    float2 uv = fragCoord / uv_size.xy; // normalize coordinates to [0,1].
+    uv = uv * 2.0 - 1.0; // map to -1, 1
+    uv.x *= uv_size.x / uv_size.y; // stretch aspect ratio for x to compensate
+    return uv;
+}
 ```
 
 ### Handy pre-defines
@@ -170,7 +178,7 @@ HLSL doesn't have `mod()` but it does have `fmod()` which is probably not what y
 boils down to not getting the kind of wraparound behavior you're probably expectding when using
 `mod()` in GLSL. Use a `#define` or proper function or otherwise do it yourself thus:
 
-```
+```cpp
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 ```
 
