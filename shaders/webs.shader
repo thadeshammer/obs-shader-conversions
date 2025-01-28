@@ -11,7 +11,7 @@
 
 uniform float4 base_color <
     string label = "Background";
-> = {1., 1., 1., 1.};
+> = {0., 0., 0., 0.};
 
 uniform float4 highlight_color <
     string label = "Webway";
