@@ -196,6 +196,12 @@ If you want GLSL's behavior, use a `#define` or proper function or otherwise do 
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 ```
 
+### GLSL's atan() -> HLSL's atan2()
+
+GLSL's `atan(y,x)` is handled with HLSL's `atan2(x,y)` for the same behavior. (Note the `2` and that
+the arguments are reversed.) Beware that HLSL also has `atan()` which takes only one argument which
+is effectively y/x, but note it will not be correct in all quadrants. (Just use `atan2()`.)
+
 ### Arrays can't be function parameters
 
 Arrays can't be passed into functions in OBS's implemenation of HLSL. If you encounter code doing
@@ -310,7 +316,7 @@ When you encounter the following keywords or operators in a GLSL shader you're t
 | replace                     | with                           | notes                                                           |
 | --------------------------- | ------------------------------ | --------------------------------------------------------------- |
 | `flt_a * matrix_b`          | `mul(flt_a, matrix_b)`         | Use `mul()` for matrix multiplication. Mind row vs col major.   |
-| `atan(y,x)`                 | `atan(x,y)`                    | The arguments are reversed here in HLSL.                        |
+| `atan(y,x)`                 | `atan2(x,y)`                   | Arguments reversed here in HLSL.                                |
 | `fract()`                   | `frac()`                       |                                                                 |
 | `matN`                      | `floatNxN`                     |                                                                 |
 | `mix()`                     | `lerp()`                       |                                                                 |
