@@ -278,6 +278,17 @@ float limited_time() {
 #define time limited_time()
 ```
 
+### Add documentation
+
+If you want to have notes visible within the OBS UI, you can define a string constant as a uniform
+like this:
+
+```cpp
+uniform string Notes<
+    string widget_type = "info";
+> = "This message will be visible in the OBS obs-shaderfilter UI once the shader is loaded.";
+```
+
 ### Quick Reference
 
 When you encounter the following keywords or operators in a GLSL shader you're trying to convert, replace them thus:
