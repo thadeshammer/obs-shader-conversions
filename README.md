@@ -21,11 +21,13 @@ write my own yet, but the only way I'll get there is studying a lot of these.
 ## Licensing and Usage of these Shaders
 
 Check eash shader file's header for its specific licensing and permissions. Almost all of them are
-CC-SA Non-Commercial. (So, don't sell the shaders and give credit. Keep sharing em.)
+CC-SA Non-Commercial. So, don't sell the shaders, give credit when using them, and keep sharing em,
+especially if you make modifications.
 
-The [Sine Puke Shader](https://www.shadertoy.com/view/4dXXzN) has no explicit license but has the
-text "steal this" in it, which seems permissive to me, but I'd recommend non-commercial use for that
-specific one.
+Most shaders here are from Shadertoy and thus are subject to their
+[default protections](https://www.shadertoy.com/terms),
+[CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en),
+unless stated otherwise. (Again, check their headers.)
 
 ## On Converting GLSL Shaders to OBS's implementation of HLSL
 
@@ -69,6 +71,12 @@ float4 mainImage(VertData v_in) : TARGET
     // sick shader code goes here
     return the_cool_color_you_made_for_this_specific_pixel;
 }
+```
+
+If you forget the `: TARGET` you'll get the following error:
+
+```text
+'main': function return value missing semantics
 ```
 
 ### fragCoord and OBS's UV origin
@@ -174,9 +182,15 @@ uniform float glow_scale<
 ### modulo calculations
 
 HLSL doesn't have `mod()` but it does have `fmod()` which is probably not what you want to GLSL's replace
-`mod()` with. `fmod()` uses `trunc()` under the hood which ignores the sign of the divisor, which
-boils down to not getting the kind of wraparound behavior you're probably expectding when using
-`mod()` in GLSL. Use a `#define` or proper function or otherwise do it yourself thus:
+`mod()` with.
+
+GLSL's `mod(x, y)` returns the remainder after division but ensures that the result has the same
+sign as the divisor.
+
+HLSL's `fmod()` uses `trunc()` and the result takes the same sign as the dividend, as it does in
+C/C++.
+
+If you want GLSL's behavior, use a `#define` or proper function or otherwise do it yourself thus:
 
 ```cpp
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))

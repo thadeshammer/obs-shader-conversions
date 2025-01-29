@@ -4,6 +4,10 @@
 // it into my classic Sine Puke, famous for being a five-minute test function endlessly copypasted
 // on glsl.heroku.org. Please steal this and make lots of rainbows!"
 
+// Subject to Shadertoy's Default License CC BY-NC-SA 3.0
+// https://www.shadertoy.com/terms
+// https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en
+
 // Based on code by Spektre posted at
 // http://stackoverflow.com/questions/3407942/rgb-values-of-visible-spectrum
 
