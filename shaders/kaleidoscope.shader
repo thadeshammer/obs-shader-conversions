@@ -71,6 +71,14 @@ uniform float WHIMSY <
     float step = 0.1;
 > = 8.;
 
+uniform float OOMPH <
+    string label = "Oomph (0.4)";
+    string widget_type = "slider";
+    float minimum = -3.0;
+    float maximum = 3.0;
+    float step = 0.01;
+> = .4;
+
 uniform int ITERATIONS <
     string label = "Density (4)";
     string widget_type = "slider";
@@ -201,7 +209,7 @@ float4 mainImage(VertData v_in) : TARGET {
     for (int i = 0; i < ITERATIONS; i++) {
         uv = uv_adjustment(uv);
         float d = length_calculation(uv) * fade_calculation(uv0);
-        float3 col = palette(length(uv0) + i*.4 + time*.4);
+        float3 col = palette(length(uv0) + i*.4 + time*OOMPH);
 
         d = abs( sin(d* WHIMSY + time) / GLOW );
         d = pow(0.01 / d, 1.2);
