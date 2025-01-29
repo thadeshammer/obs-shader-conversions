@@ -259,7 +259,24 @@ float gold_noise(float2 xy, float seed){
 
 You can see this in-use in `space-travel.shader`, where I also use a somewhat more complicated hash
 method from that same StackOverflow page as the seed. (You could also use `elapsed_time` for a seed,
-or the color value of the screen, or whatever you like.)
+or the color value of the screen, or whatever you like.) _This is still being tested._
+
+### Cap to 60 FPS
+
+I'm still learning, but my understanding is that this will prevent updates from happening outside of
+60 FPS (the frame will hold static, which is better for compression and thus better for processing,
+bandwidth, PCI bus stress, etc.) so if you run intense shaders, maybe this code will help you too.
+
+```cpp
+float limited_time() {
+    float target_fps = 60.0;
+    float frame_time = 1.0 / target_fps;
+    return floor(elapsed_time / frame_time) * frame_time;
+}
+
+// use time instead of elapsed_time or iTime
+#define time limited_time()
+```
 
 ### Quick Reference
 

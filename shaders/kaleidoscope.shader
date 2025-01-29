@@ -8,6 +8,9 @@
 // https://youtu.be/f4s1h2YETNY
 
 
+// Try:
+// Length Calc 4, Fade Calc 2, UV Calc 2, Glow 13.9, Zone Size < 1.5, Whimsy 12.1, Burst 3
+
 uniform float4 COLOR_A <
     string label = "Color 1";
 > = {0.141, 0.306, .373, 1.0};
@@ -21,7 +24,7 @@ uniform float4 COLOR_D <
 > = {1., .33, 1., 1.0};
 
 uniform int MODE_A <
-    string label = "Major Mode (1)";
+    string label = "Length Calc (1)";
     string widget_type = "slider";
     int minimum = 1;
     int maximum = 4;
@@ -29,12 +32,20 @@ uniform int MODE_A <
 > = 1;
 
 uniform int MODE_B <
-    string label = "Minor Mode (2)";
+    string label = "Fade Calc (2)";
     string widget_type = "slider";
     int minimum = 1;
     int maximum = 4;
     int step = 1;
 > = 2;
+
+uniform int UV_CALC <
+    string label = "UV Calc (1)";
+    string widget_type = "slider";
+    int minimum = 1;
+    int maximum = 3;
+    int step = 1;
+> = 1;
 
 uniform float GLOW <
     string label = "Glow (8.0)";
@@ -116,6 +127,14 @@ uniform float ALPHA_VALUE <
     float step = 0.1;
 > = 1.0;
 
+float limited_time() {
+    float target_fps = 60.0;
+    float frame_time = 1.0 / target_fps;
+    return floor(elapsed_time / frame_time) * frame_time;
+}
+
+#define time limited_time()
+
 // Palette handling from https://iquilezles.org/articles/palettes/
 float3 palette( float t ) {
     float3 a = COLOR_A;
@@ -131,6 +150,18 @@ float gold_noise(float2 xy, float seed){
     // https://stackoverflow.com/a/28095165/19677371
     float phi = 1.61803398874989484820459;  // Φ = Golden Ratio
     return frac(tan(distance(xy*phi, xy)*seed)*xy.x);
+}
+
+float2 uv_adjustment(float2 uv) {
+    if (UV_CALC == 1) {
+        return frac(uv * ZOOM) - WONK;
+    } else if (UV_CALC == 2) {
+        return abs(uv * ZOOM) - WONK;
+    } else if (UV_CALC == 3) {
+        return (uv * ZOOM) - WONK;
+    } else {
+        return frac(uv * ZOOM) - WONK;  // fallback
+    }
 }
 
 float length_calculation(float2 uv) {
@@ -155,7 +186,7 @@ float fade_calculation(float uv0) {
     } else if (MODE_B == 3) {
         return 1 / (1.0 + length(uv0) * length(uv0) * BURST); // Quadratic decay
     } else if (MODE_B == 4) {
-        float decayFactor = sin(elapsed_time * 0.5) * 0.5 + 1.0; // Dynamic decay
+        float decayFactor = sin(time * 0.5) * 0.5 + 1.0; // Dynamic decay
         return exp(-length(uv0) * BURST * decayFactor);
     } else {
         return exp(-length(uv0) * BURST); // exponential fade (o.g.)
@@ -168,11 +199,11 @@ float4 mainImage(VertData v_in) : TARGET {
     float3 fragColor = float3(0., 0., 0.);
     
     for (int i = 0; i < ITERATIONS; i++) {
-        uv = frac(uv * ZOOM) - WONK;
+        uv = uv_adjustment(uv);
         float d = length_calculation(uv) * fade_calculation(uv0);
-        float3 col = palette(length(uv0) + i*.4 + elapsed_time*.4);
+        float3 col = palette(length(uv0) + i*.4 + time*.4);
 
-        d = abs( sin(d* WHIMSY + elapsed_time) / GLOW );
+        d = abs( sin(d* WHIMSY + time) / GLOW );
         d = pow(0.01 / d, 1.2);
         fragColor += col * d * BRIGHTNESS;
     }
