@@ -1,28 +1,30 @@
+// https://www.shadertoy.com/view/ltffzl
+
 // Heartfelt - by Martijn Steinrucken aka BigWings - 2017
 // Email:countfrolic@gmail.com Twitter:@The_ArtOfCode
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
-// I revisited the rain effect I did for another shader. This one is better in multiple ways:
-// 1. The glass gets foggy.
-// 2. Drops cut trails in the fog on the glass.
-// 3. The amount of rain is adjustable (with Mouse.y)
-
-// To have full control over the rain, uncomment the HAS_HEART define 
-
 // A video of the effect can be found here:
 // https://www.youtube.com/watch?v=uiF5Tlw22PI&feature=youtu.be
 
-// Music - Alone In The Dark - Vadim Kiselev
-// https://soundcloud.com/ahmed-gado-1/sad-piano-alone-in-the-dark
-// Rain sounds:
-// https://soundcloud.com/elirtmusic/sleeping-sound-rain-and-thunder-1-hours
+// Converted for OBS by thades - 2025.01.24
+// https://twitch.tv/thadeshammer
+// https://github.com/thadeshammer/obs-shader-conversions
 
 #define S(a, b, t) smoothstep(a, b, t)
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
+uniform bool USE_POST_PROCESSING <
+    string label = "Post Processing";
+> = true;
+
+uniform bool CHEAP_NORMALS <
+    string label = "Simple Mode";
+> = false;
+
 //#define CHEAP_NORMALS
 #define HAS_HEART
-#define USE_POST_PROCESSING
+// #define USE_POST_PROCESSING
 
 float3 N13(float p) {
     //  from DAVE HOSKINS
@@ -117,17 +119,15 @@ float2 Drops(float2 uv, float t, float l0, float l1, float l2) {
 
 float4 mainImage( VertData v_in ) : TARGET {
     float2 fragCoord = float2(v_in.pos.x, uv_size.y - v_in.pos.y);
-    // float2 fragCoord = float2(v_in.pos.x, v_in.pos.y);
 
 	float2 uv = (fragCoord.xy-.5*uv_size.xy) / uv_size.y;
     float2 UV = fragCoord.xy/uv_size.xy;
 
-    // float3 M = iMouse.xyz/uv_size.xyz;
     float T = elapsed_time;
     
     #ifdef HAS_HEART
     T = mod(elapsed_time, 102.);
-    T = lerp(T, 102., 0.); // M.z>0.?1.:0.); // previously M was Mouse
+    T = lerp(T, 102., 0.);
     #endif
     
     float t = T*.2;
@@ -173,17 +173,16 @@ float4 mainImage( VertData v_in ) : TARGET {
     float layer1 = S(.25, .75, rainAmount);
     float layer2 = S(.0, .5, rainAmount);
     
-    
+    float2 n = float2(1., 1.);
     float2 c = Drops(uv, t, staticDrops, layer1, layer2);
-    #ifdef CHEAP_NORMALS
-    	float2 n = float2(dFdx(c.x), dFdy(c.x));// cheap normals (3x cheaper, but 2 times shittier ;))
-    #else
+    if (CHEAP_NORMALS) {
+    	n = float2(ddx(c.x), ddy(c.x)); // cheap normals (3x cheaper, but 2 times shittier ;))
+    } else {
     	float2 e = float2(.001, 0.);
     	float cx = Drops(uv+e, t, staticDrops, layer1, layer2).x;
     	float cy = Drops(uv+e.yx, t, staticDrops, layer1, layer2).x;
-    	float2 n = float2(cx-c.x, cy-c.x);		// expensive normals
-    #endif
-    
+    	n = float2(cx-c.x, cy-c.x);		// expensive normals
+    }
     
     #ifdef HAS_HEART
     n *= 1.-S(60., 85., T);
@@ -192,32 +191,29 @@ float4 mainImage( VertData v_in ) : TARGET {
     
     float focus = lerp(maxBlur-c.y, minBlur, S(.1, .2, c.x));
 
-    // textureLod -> SampleLevel to sample at mipmap level; focus is level of detail
+    // GLSL textureLod -> SampleLevel to sample at mipmap level; focus is level of detail
     // have to y-flip texture so it's oriented correctly
     float2 flippedUV = float2(UV.x, 1.0 - UV.y);
     float3 col = image.SampleLevel(textureSampler, flippedUV + n, focus).rgb;
-
-    // float3 col = image.SampleLevel(textureSampler, UV + n, focus).rgb;
-    // float3 col = textureLod(iChannel0, UV+n, focus).rgb;
     
-    #ifdef USE_POST_PROCESSING
-    t = (T+3.)*.5;										// make time sync with first lightnoing
-    float colFade = sin(t*.2)*.5+.5+story;
-    col = mul(lerp(float3(1., 1., 1.), float3(.8, .9, 1.3), colFade), col);	// subtle color shift
-    float fade = S(0., 10., T);							// fade in at the start
-    float lightning = sin(t*sin(t*10.));				// lighting flicker
-    lightning *= pow(max(0., sin(t+sin(t))), 10.);		// lightning flash
-    col = mul(1.+lightning*fade*lerp(1., .1, story*story), col);	// composite lightning
-    col = mul(1.-dot(UV-=.5, UV), col);							// vignette
-    											
-    #ifdef HAS_HEART
-    	col = lerp(pow(col, float3(1.2, 1.2, 1.2)), col, heart);
-    	fade *= S(102., 97., T);
-    #endif
+    if (USE_POST_PROCESSING) {
+        t = (T+3.)*.5;										// make time sync with first lightnoing
+        float colFade = sin(t*.2)*.5+.5+story;
+        col = mul(lerp(float3(1., 1., 1.), float3(.8, .9, 1.3), colFade), col);	// subtle color shift
+        float fade = S(0., 10., T);							// fade in at the start
+        float lightning = sin(t*sin(t*10.));				// lighting flicker
+        lightning *= pow(max(0., sin(t+sin(t))), 10.);		// lightning flash
+        col = mul(1.+lightning*fade*lerp(1., .1, story*story), col);	// composite lightning
+        col = mul(1.-dot(UV-=.5, UV), col);							// vignette
+                                                    
+        #ifdef HAS_HEART
+            col = lerp(pow(col, float3(1.2, 1.2, 1.2)), col, heart);
+            fade *= S(102., 97., T);
+        #endif
+        
+        col *= fade;										// composite start and end fade
+    }
     
-    col *= fade;										// composite start and end fade
-    #endif
-    
-    //col = float3(heart);
+    // col = float3(heart, heart, heart);
     return float4(col, 1.);
 }
