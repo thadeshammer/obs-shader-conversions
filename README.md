@@ -163,7 +163,8 @@ You just need to explicitly add all of the values to fix this.
 ### There is no const
 
 Replace `const` with `#define` preprocessor directives, or you can use `uniform<>` if you want to
-surface it in the OBS UI for user adjustment.
+surface it in the OBS UI for user adjustment. If you define a variable at global scope, it is
+assumed constant and will yell at you if you try to change it in obs-shaderfilter.
 
 #### const becomes define
 
@@ -179,7 +180,7 @@ const int STEPS = 8;
 
 Surface constants to the OBS UI using the `uniform` keyword and angle brackets syntax. Examples follow.
 
-#### Single number field with default value.
+#### Single number field with default value
 
 ```cpp
 uniform float value = 0.0;
@@ -325,6 +326,12 @@ float gold_noise(float2 xy, float seed){
 You can see this in-use in `space-travel.shader`, where I also use a somewhat more complicated hash
 method from that same StackOverflow page as the seed. (You could also use `elapsed_time` for a seed,
 or the color value of the screen, or whatever you like.) _This is still being tested._
+
+### iMouse
+
+To my knowledge, mouse interactions are irrelevant to obs-shaderfilter. (It would be pretty weird
+otherwise.) References to iMouse I tend to just rip out, or set them to identity (1. for
+multiplication, 0. for addition) until I figure out how to safely rip them out.
 
 ### Cap to 60 FPS
 
