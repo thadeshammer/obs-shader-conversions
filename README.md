@@ -227,13 +227,13 @@ NOTE that HLSL allows the programmer to explicitly set matrix storage order with
 `column_major` keywords, however it's not known to me whether this is supported in OBS's
 implementation. (I haven't tried it. Let me know if you do.)
 
-### iChannelN and texelFetch
+### iChannelN, texelFetch, and textureLod
 
 In GLSL, iChannelN (where N is 0, 1, 2, etc.) represents an input texture or buffer, which is
 ShaderToy specific, I believe. I _think_ I've seen shaders that essentially do this but will need to
 find them to clarify this section and my understanding.
 
-One example I saw recently is shown in `constellations-lscczl.shader` here in this repo. I was able
+One example I saw recently is shown in `webs.shader` here in this repo. I was able
 to replace specificaly this:
 
 ```glsl
@@ -253,6 +253,24 @@ float fft = image.Sample(textureSampler, v_in.uv).x;
 - `image.Sample(textureSampler, v_in.uv)` is the current input texture being processed by the
   shader. If applied as a filter to a source (image, capture) then `image` refers to that source; if
   applied to the entire scene, `image` represents the full composited scene before the shader runs.
+
+Another example in `rainy-window.shader` that samples the current scene. In GLSL:
+
+```glsl
+// notes:
+// UV is aspect-corrected fragCoord.xy
+// n is a float2 with the x and y normals
+// focus is a float for detail level
+float3 col = textureLod(iChannel0, UV+n, focus).rgb;
+```
+
+That loads from the texture in iChannel0 at mipmap level UV+n with detail-level focus (a float). To
+accomplish this in HLSL for OBS I used `image.SampleLevel()`:
+
+```cpp
+float2 flippedUV = float2(UV.x, 1.0 - UV.y); // had to flip y-axis here
+float3 col = image.SampleLevel(textureSampler, flippedUV + n, focus).rgb;
+```
 
 As I learn more, I'll add more here.
 
@@ -283,9 +301,11 @@ or the color value of the screen, or whatever you like.) _This is still being te
 
 ### Cap to 60 FPS
 
-I'm still learning, but my understanding is that this will prevent updates from happening outside of
-60 FPS (the frame will hold static, which is better for compression and thus better for processing,
-bandwidth, PCI bus stress, etc.) so if you run intense shaders, maybe this code will help you too.
+If you use this on time-based updates (or link ot to update maths otherwise) this can hold a current
+frame mostly static, reducing or elimating changes, which is better for compression and thus better
+for networking. In the examples I use it in, that's all it will do; other calculations will still be
+happening, so the GPU will still be working. Still, my bottleneck recently was (believe it or not)
+network bandwidth, so I'm trying this.
 
 ```cpp
 float limited_time() {
@@ -317,11 +337,12 @@ When you encounter the following keywords or operators in a GLSL shader you're t
 | --------------------------- | ------------------------------ | --------------------------------------------------------------- |
 | `flt_a * matrix_b`          | `mul(flt_a, matrix_b)`         | Use `mul()` for matrix multiplication. Mind row vs col major.   |
 | `atan(y,x)`                 | `atan2(x,y)`                   | Arguments reversed here in HLSL.                                |
+| `dFdx()` and `dFdy()`       | `ddx()` and `ddy()`            |                                                                 |
 | `fract()`                   | `frac()`                       |                                                                 |
-| `matN`                      | `floatNxN`                     |                                                                 |
-| `mix()`                     | `lerp()`                       |                                                                 |
 | `fragCoord`, `gl_fragCoord` | `v_in.pos`                     | The y-axis is inverted here from GLSL, see associated section.  |
 | `iResolution`               | `uv_size`                      | The y-axis is inverted here from GLSL, see `fragCoord` section. |
 | `iTime`                     | `elapsed_time`                 |                                                                 |
+| `matN`                      | `floatNxN`                     |                                                                 |
+| `mix()`                     | `lerp()`                       |                                                                 |
 | `texelFetch(t, v, m)`       | `image.Sample(textureSampler)` | See associated section.                                         |
 | `vecN`                      | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)` |
