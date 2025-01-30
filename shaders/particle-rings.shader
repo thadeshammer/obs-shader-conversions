@@ -1,4 +1,4 @@
-// Based on creation by Stephane Cuillerdier - Aiekick/2015
+// Based on particle experiment by Stephane Cuillerdier - Aiekick/2015
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // Tuned via XShade (http://www.funparadigm.com/xshade/)
 
