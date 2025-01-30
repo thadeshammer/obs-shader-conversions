@@ -24,6 +24,30 @@ uniform float ZOOM_AMOUNT <
     float step = 0.01;
 > = 1.;
 
+uniform float BRIGHTNESS <
+    string label = "Brightness (-0.33)";
+    string widget_type = "slider";
+    float minimum = -1.0;
+    float maximum = 1.0;
+    float step = 0.01;
+> = -.33;
+
+uniform float CONTRAST <
+    string label = "Contrast (.51)";
+    string widget_type = "slider";
+    float minimum = 0.0;
+    float maximum = 3.0;
+    float step = 0.01;
+> = .51;
+
+uniform float GAMMA <
+    string label = "Gamma (1.3)";
+    string widget_type = "slider";
+    float minimum = 0.1;
+    float maximum = 5.0;
+    float step = 0.1;
+> = 1.3;
+
 uniform bool FILM_NOIR <
     string label = "Film Noir (for the detective in you)";
 > = true;
@@ -180,6 +204,12 @@ float4 mainImage( VertData v_in ) : TARGET {
 
         col *= fade;										            // composite start and end fade
     }
+
+    // **Apply Brightness, Contrast, and Gamma**
+    col = (col - 0.5) * CONTRAST + 0.5;   // Apply contrast
+    col += BRIGHTNESS;                    // Apply brightness
+    float gamma = 1.0 / GAMMA;
+    col = pow(col, float3(gamma, gamma, gamma));  // Apply gamma correction
     
     return float4(col, 1.);
 }
