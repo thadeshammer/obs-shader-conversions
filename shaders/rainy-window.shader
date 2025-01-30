@@ -14,6 +14,15 @@
 #define S(a, b, t) smoothstep(a, b, t)
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
+// need to cut heart mode for this to work
+// uniform float ZOOM_AMOUNT <
+//     string label = "Zoom (1.0)";
+//     string widget_type = "slider";
+//     float minimum = 1.0;
+//     float maximum = 5.0;
+//     float step = 0.01;
+// > = 1.;
+
 uniform bool USE_POST_PROCESSING <
     string label = "Post Processing";
 > = true;
@@ -22,9 +31,14 @@ uniform bool CHEAP_NORMALS <
     string label = "Simple Mode";
 > = false;
 
-//#define CHEAP_NORMALS
-#define HAS_HEART
-// #define USE_POST_PROCESSING
+uniform bool HAS_HEART <
+    string label = "'Has Heart' Mode (a little show with a fade-out)";
+> = false;
+
+uniform bool ZOOM_MODE <
+    string label = "Auto Zoom in and out";
+> = false;
+
 
 float3 N13(float p) {
     //  from DAVE HOSKINS
@@ -125,10 +139,10 @@ float4 mainImage( VertData v_in ) : TARGET {
 
     float T = elapsed_time;
     
-    #ifdef HAS_HEART
-    T = mod(elapsed_time, 102.);
-    T = lerp(T, 102., 0.);
-    #endif
+    if (HAS_HEART){
+        T = mod(elapsed_time, 102.);
+        T = lerp(T, 102., 0.);
+    }
     
     float t = T*.2;
     
@@ -139,34 +153,41 @@ float4 mainImage( VertData v_in ) : TARGET {
     
     float story = 0.;
     float heart = 0.;
+    float zoom = 1.;
     
-    #ifdef HAS_HEART
-    story = S(0., 70., T);
-    
-    t = min(1., T/70.);						// remap drop time so it goes slower when it freezes
-    t = 1.-t;
-    t = (1.-t*t)*70.;
-    
-    float zoom= lerp(.3, 1.2, story);		// slowly zoom out
-    uv *=zoom;
-    minBlur = 4.+S(.5, 1., story)*3.;		// more opaque glass towards the end
-    maxBlur = 6.+S(.5, 1., story)*1.5;
-    
-    float2 hv = uv-float2(.0, -.1);				// build heart
-    hv.x *= .5;
-    float s = S(110., 70., T);				// heart gets smaller and fades towards the end
-    hv.y-=sqrt(abs(hv.x))*.5*s;
-    heart = length(hv);
-    heart = S(.4*s, .2*s, heart)*s;
-    rainAmount = heart;						// the rain is where the heart is
-    
-    maxBlur-=heart;							// inside the heart slighly less foggy
-    uv *= 1.5;								// zoom out a bit more
-    t *= .25;
-    #else
-    float zoom = -cos(T*.2);
-    uv *= .7+zoom*.3;
-    #endif
+    if (HAS_HEART){
+        story = S(0., 70., T);
+        
+        t = min(1., T/70.);						// remap drop time so it goes slower when it freezes
+        t = 1.-t;
+        t = (1.-t*t)*70.;
+        
+        if (ZOOM_MODE) {
+            // slowly zoom out
+            zoom= lerp(.3, 1.2, story);		    
+            uv *=zoom;
+        }
+        minBlur = 4.+S(.5, 1., story)*3.;		// more opaque glass towards the end
+        maxBlur = 6.+S(.5, 1., story)*1.5;
+        
+        float2 hv = uv-float2(.0, -.1);				// build heart
+        hv.x *= .5;
+        float s = S(110., 70., T);				// heart gets smaller and fades towards the end
+        hv.y-=sqrt(abs(hv.x))*.5*s;
+        heart = length(hv);
+        heart = S(.4*s, .2*s, heart)*s;
+        rainAmount = heart;						// the rain is where the heart is
+        
+        maxBlur-=heart;							// inside the heart slighly less foggy
+        uv *= 1.5;								// zoom out a bit more
+        t *= .25;
+    } else if (ZOOM_MODE) {
+        zoom = -cos(T*.2);
+        uv *= .7+zoom*.3;
+    } else {
+        // uv /= zoom;  // will need to cut out heart mode for this to work
+    }
+
     UV = (UV-.5)*(.9+zoom*.1)+.5;
     
     float staticDrops = S(-.5, 1., rainAmount)*2.;
@@ -184,10 +205,10 @@ float4 mainImage( VertData v_in ) : TARGET {
     	n = float2(cx-c.x, cy-c.x);		// expensive normals
     }
     
-    #ifdef HAS_HEART
-    n *= 1.-S(60., 85., T);
-    c.y *= 1.-S(80., 100., T)*.8;
-    #endif
+    if (HAS_HEART) {
+        n *= 1.-S(60., 85., T);
+        c.y *= 1.-S(80., 100., T)*.8;
+    }
     
     float focus = lerp(maxBlur-c.y, minBlur, S(.1, .2, c.x));
 
@@ -206,10 +227,10 @@ float4 mainImage( VertData v_in ) : TARGET {
         col = mul(1.+lightning*fade*lerp(1., .1, story*story), col);	// composite lightning
         col = mul(1.-dot(UV-=.5, UV), col);							// vignette
                                                     
-        #ifdef HAS_HEART
+        if (HAS_HEART) {
             col = lerp(pow(col, float3(1.2, 1.2, 1.2)), col, heart);
             fade *= S(102., 97., T);
-        #endif
+        }
         
         col *= fade;										// composite start and end fade
     }
