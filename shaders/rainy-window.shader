@@ -4,39 +4,32 @@
 // Email:countfrolic@gmail.com Twitter:@The_ArtOfCode
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
-// A video of the effect can be found here:
+// A video of the original effect can be found here:
 // https://www.youtube.com/watch?v=uiF5Tlw22PI&feature=youtu.be
 
-// Converted for OBS by thades - 2025.01.24
+// Converted for OBS by thades - 2025.01.30
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
+// I removed heart mode which honesty pained me a bit, but it's more useful for more streams if
+// it's simply constant rain. Go see the o.g. effect!
 
 #define S(a, b, t) smoothstep(a, b, t)
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
-// need to cut heart mode for this to work
-// uniform float ZOOM_AMOUNT <
-//     string label = "Zoom (1.0)";
-//     string widget_type = "slider";
-//     float minimum = 1.0;
-//     float maximum = 5.0;
-//     float step = 0.01;
-// > = 1.;
+uniform float ZOOM_AMOUNT <
+    string label = "Zoom (1.0)";
+    string widget_type = "slider";
+    float minimum = .01;
+    float maximum = 5.0;
+    float step = 0.01;
+> = 1.;
 
-uniform bool USE_POST_PROCESSING <
-    string label = "Post Processing";
+uniform bool FILM_NOIR <
+    string label = "Film Noir (for the detective in you)";
 > = true;
 
 uniform bool CHEAP_NORMALS <
-    string label = "Simple Mode";
-> = false;
-
-uniform bool HAS_HEART <
-    string label = "'Has Heart' Mode (a little show with a fade-out)";
-> = false;
-
-uniform bool ZOOM_MODE <
-    string label = "Auto Zoom in and out";
+    string label = "Simple Mode (if this hurts your gpu)";
 > = false;
 
 
@@ -137,58 +130,19 @@ float4 mainImage( VertData v_in ) : TARGET {
 	float2 uv = (fragCoord.xy-.5*uv_size.xy) / uv_size.y;
     float2 UV = fragCoord.xy/uv_size.xy;
 
-    float T = elapsed_time;
-    
-    if (HAS_HEART){
-        T = mod(elapsed_time, 102.);
-        T = lerp(T, 102., 0.);
-    }
-    
+    float T = elapsed_time;    
     float t = T*.2;
     
-    float rainAmount = sin(T*.05)*.3+.7;
+    // float rainAmount = sin(T*.05)*.3+.7;
+    float rainAmount = sin(T*.05) *.3 + .7;
     
     float maxBlur = lerp(3., 6., rainAmount);
     float minBlur = 2.;
     
-    float story = 0.;
-    float heart = 0.;
+    float story = 1.;
     float zoom = 1.;
-    
-    if (HAS_HEART){
-        story = S(0., 70., T);
-        
-        t = min(1., T/70.);						// remap drop time so it goes slower when it freezes
-        t = 1.-t;
-        t = (1.-t*t)*70.;
-        
-        if (ZOOM_MODE) {
-            // slowly zoom out
-            zoom= lerp(.3, 1.2, story);		    
-            uv *=zoom;
-        }
-        minBlur = 4.+S(.5, 1., story)*3.;		// more opaque glass towards the end
-        maxBlur = 6.+S(.5, 1., story)*1.5;
-        
-        float2 hv = uv-float2(.0, -.1);				// build heart
-        hv.x *= .5;
-        float s = S(110., 70., T);				// heart gets smaller and fades towards the end
-        hv.y-=sqrt(abs(hv.x))*.5*s;
-        heart = length(hv);
-        heart = S(.4*s, .2*s, heart)*s;
-        rainAmount = heart;						// the rain is where the heart is
-        
-        maxBlur-=heart;							// inside the heart slighly less foggy
-        uv *= 1.5;								// zoom out a bit more
-        t *= .25;
-    } else if (ZOOM_MODE) {
-        zoom = -cos(T*.2);
-        uv *= .7+zoom*.3;
-    } else {
-        // uv /= zoom;  // will need to cut out heart mode for this to work
-    }
 
-    UV = (UV-.5)*(.9+zoom*.1)+.5;
+    uv /= ZOOM_AMOUNT;
     
     float staticDrops = S(-.5, 1., rainAmount)*2.;
     float layer1 = S(.25, .75, rainAmount);
@@ -205,36 +159,27 @@ float4 mainImage( VertData v_in ) : TARGET {
     	n = float2(cx-c.x, cy-c.x);		// expensive normals
     }
     
-    if (HAS_HEART) {
-        n *= 1.-S(60., 85., T);
-        c.y *= 1.-S(80., 100., T)*.8;
-    }
-    
     float focus = lerp(maxBlur-c.y, minBlur, S(.1, .2, c.x));
-
     // GLSL textureLod -> SampleLevel to sample at mipmap level; focus is level of detail
     // have to y-flip texture so it's oriented correctly
     float2 flippedUV = float2(UV.x, 1.0 - UV.y);
     float3 col = image.SampleLevel(textureSampler, flippedUV + n, focus).rgb;
     
-    if (USE_POST_PROCESSING) {
+    if (FILM_NOIR) {
+        // Note the lightning and vignette only work with the greyscale and is very noir, so I
+        // ultimately didn't tease them apart.
         t = (T+3.)*.5;										// make time sync with first lightnoing
         float colFade = sin(t*.2)*.5+.5+story;
         col = mul(lerp(float3(1., 1., 1.), float3(.8, .9, 1.3), colFade), col);	// subtle color shift
-        float fade = S(0., 10., T);							// fade in at the start
-        float lightning = sin(t*sin(t*10.));				// lighting flicker
-        lightning *= pow(max(0., sin(t+sin(t))), 10.);		// lightning flash
+        float fade = S(0., 10., T);							            // fade in at the start
+        float lightning = sin(t*sin(t*10.));				            // lighting flicker
+        lightning *= pow(max(0., sin(t+sin(t))), 10.);		            // lightning flash
         col = mul(1.+lightning*fade*lerp(1., .1, story*story), col);	// composite lightning
-        col = mul(1.-dot(UV-=.5, UV), col);							// vignette
-                                                    
-        if (HAS_HEART) {
-            col = lerp(pow(col, float3(1.2, 1.2, 1.2)), col, heart);
-            fade *= S(102., 97., T);
-        }
-        
-        col *= fade;										// composite start and end fade
+
+        col = mul(1.-dot(UV-=.5, UV), col);							    // vignette
+
+        col *= fade;										            // composite start and end fade
     }
     
-    // col = float3(heart, heart, heart);
     return float4(col, 1.);
 }
