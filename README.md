@@ -34,6 +34,17 @@ Shaders in OBS wouldn't really be accessible to most of us without the mighty pl
 And thanks to the authors of these shaders on Shadertoy and elsewhere. I don't really know how to
 write my own yet, but the only way I'll get there is studying a lot of these.
 
+## Usage
+
+**NOTE LICENSING** and make sure it conforms to your production. You'll need to install the
+[obs-shaderfilter](https://github.com/exeldro/obs-shaderfilter/releases) plugin (2.4.1 or later) and
+load these as you would any other shader. I recommend [Nutty's
+video](https://www.youtube.com/watch?v=1WidFdW-yNo) on how to get it setup and how to work with it,
+if you're unfamiliar.
+
+Personally, I drop these shaders into a folder next to the `/examples` folder so they're easy to
+find, but I'm not the boss of you! Do what works easiest for you!
+
 ## Licensing and Usage of these Shaders
 
 Check eash shader file's header for its specific licensing and permissions. Almost all of them are
