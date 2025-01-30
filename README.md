@@ -7,6 +7,22 @@ shaders, as well as the ability to play with the ones I had. So, why not share m
 Everything under `shaders/` is under variations of the Creative Commons licensure, so feel free to
 pull any or all of them down as you like and load them into your own production. Enjoy!
 
+## Showcase
+
+Full resolution screen caps of these and other shaders under the `/showcase` folder.
+
+### Kaleidoscope
+
+<img src="showcase/kaleidoscope-demo.png" alt="Kaleidoscope Shader" width="400">
+
+### Rainy Lens
+
+<img src="showcase/rainy-lens-demo.png" alt="Rainy Lens Shader" width="400">
+
+### Warpspeed
+
+<img src="showcase/warpspeed-demo.png" alt="Warpspeed Shader" width="400">
+
 ## Acknowledgements
 
 Special thanks to SkeletonBow. Withtout their overwhelming contributions, this guide wouldn't have
