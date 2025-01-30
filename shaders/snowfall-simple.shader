@@ -26,6 +26,14 @@ uniform float SNOW_INTENSITY <
     float step = .1;
 > = .2;
 
+uniform float SNOW_CLARITY <
+    string label = "Clarity (.9)";
+    string widget_type = "slider";
+    float minimum = 0.01;
+    float maximum = 1.;
+    float step = .01;
+> = .9;
+
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
 #define time elapsed_time
@@ -60,7 +68,7 @@ float4 mainImage(VertData v_in) : TARGET
                 (0.25-uv.y)*SNOW_INTENSITY+rnd(j)+0.1*cos(time+sin(j)),
                 mod(sin(j)-speed*(time*1.5*(0.1+SNOW_INTENSITY)), 0.65)
             );
-        float col = 0.9 * drawCircle(center, 0.001+speed*0.012, uv);
+        float col = SNOW_CLARITY * drawCircle(center, 0.001+speed*0.012, uv);
         fragColor += float4(col, col, col, col);
     }
 
