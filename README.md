@@ -352,6 +352,7 @@ like this:
 
 ```cpp
 uniform string Notes<
+    string label = "Info!";
     string widget_type = "info";
 > = "This message will be visible in the OBS obs-shaderfilter UI once the shader is loaded.";
 ```
