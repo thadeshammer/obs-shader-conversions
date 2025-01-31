@@ -69,11 +69,10 @@ uniform float compression_factor <
 float noise_in_range(float2 p, float a, float b) {
     // Hash function to generate pseudo-random values between 0 and 1
     float hashValue = frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
-
+    
     // Scale and shift to map hashValue to range [a, b]
     return lerp(a, b, hashValue);
 }
-
 
 float4 mainImage(VertData v_in) : TARGET
 {

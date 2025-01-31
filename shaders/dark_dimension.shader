@@ -21,6 +21,11 @@
 
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
+uniform string Notes<
+    string label = "WARNING!";
+    string widget_type = "info";
+> = "EPILEPSY WARNING! This shader can very easily wind up strobing.";
+
 uniform float4 base_color <
     string label = "Color";
 > = {0.2, 0.1, 0.4, 1.0};
@@ -34,12 +39,12 @@ uniform float alpha_value <
 > = 1.0;
 
 uniform float amplitude <
-    string label = "FBM Intensity (0.1)";
+    string label = "FBM Intensity (0.25)";
     string widget_type = "slider";
     float minimum = 0.0;
     float maximum = 100.0;
     float step = 0.05;
-> = 0.1;
+> = 0.25;
 
 uniform float amplitude_scaling <
     string label = "FBM amp scaling (2.0)";
@@ -129,9 +134,16 @@ uniform float interpolation_b <
     float step = 0.1;
 > = 2.0;
 
-uniform bool use_golden_ratio <
-    string label = "Alternate Noise Function";
-> = false;
+uniform int SELECT_NOISE_FUNCTION <
+    string label = "Noise Generator";
+    string widget_type = "select";
+    int     option_0_value = 0;
+    string  option_0_label = "Homebrew Noise Function";
+    int     option_1_value = 1;
+    string  option_1_label = "Golden Ratio indexing";
+    int     option_2_value = 2;
+    string  option_2_label = "Strobe";
+> = 0;
 
 
 float2x2 makem2(float theta) {
@@ -183,10 +195,12 @@ float fbm(float2 p)
 
 	for (float i= 1.; i < 6.; i++) // each loop is an "octave" or layer of noise
 	{
-        if (use_golden_ratio) {
-            result_accum += abs((gold_noise(p, noise(p))-0.5)*2.)/z;
-        } else {
+        if (SELECT_NOISE_FUNCTION == 0) {
             result_accum += abs((noise(p)-0.5)*2.)/z;
+        } else if (SELECT_NOISE_FUNCTION == 1) {
+            result_accum += abs((gold_noise(p, noise(p))-0.5)*2.)/z;
+        } else if (SELECT_NOISE_FUNCTION == 2) {
+            result_accum += abs((rand_f - 0.5)*2.)/z;
         }
 
 		z *= amplitude_scaling;

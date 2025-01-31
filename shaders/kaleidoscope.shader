@@ -23,29 +23,53 @@ uniform float4 COLOR_D <
     string label = "Color 3";
 > = {1., .33, 1., 1.0};
 
-uniform int MODE_A <
-    string label = "Length Calc (1)";
-    string widget_type = "slider";
-    int minimum = 1;
-    int maximum = 4;
-    int step = 1;
-> = 1;
+uniform int SELECT_LENGTH_CALC <
+    string label = "Length Calculation";
+    string widget_type = "select";
+    int     option_0_value = 0;
+    string  option_0_label = "Center";
+    int     option_1_value = 1;
+    string  option_1_label = "Horizontal";
+    int     option_2_value = 2;
+    string  option_2_label = "Vertical";
+    int     option_3_value = 3;
+    string  option_3_label = "Crosshatch";
+    int     option_4_value = 4;
+    string  option_4_label = "Irregular (Choose Noise Function)";
+> = 0;
 
-uniform int MODE_B <
-    string label = "Fade Calc (2)";
-    string widget_type = "slider";
-    int minimum = 1;
-    int maximum = 4;
-    int step = 1;
-> = 2;
+uniform int SELECT_FADE_CALC <
+    string label = "Fade Calculation";
+    string widget_type = "select";
+    int     option_0_value = 0;
+    string  option_0_label = "Exponential";
+    int     option_1_value = 1;
+    string  option_1_label = "Inverse-Linear Decay";
+    int     option_2_value = 2;
+    string  option_2_label = "Quadratic";
+    int     option_3_value = 3;
+    string  option_3_label = "Dynamic";
+> = 0;
 
 uniform int UV_CALC <
-    string label = "UV Calc (1)";
-    string widget_type = "slider";
-    int minimum = 1;
-    int maximum = 3;
-    int step = 1;
-> = 1;
+    string label = "Fade Calculation";
+    string widget_type = "select";
+    int     option_0_value = 0;
+    string  option_0_label = "frac())";
+    int     option_1_value = 1;
+    string  option_1_label = "abs()";
+    int     option_2_value = 2;
+    string  option_2_label = "unleashed";
+> = 0;
+
+uniform int NOISE_FUNCTION <
+    string label = "Noise Generator";
+    string widget_type = "select";
+    int     option_0_value = 0;
+    string  option_0_label = "Golden Ratio indexing (for length calc)";
+    int     option_1_value = 1;
+    string  option_1_label = "obs-shaderfilter rand_f (for length calc)";
+> = 0;
 
 uniform float GLOW <
     string label = "Glow (8.0)";
@@ -160,12 +184,27 @@ float gold_noise(float2 xy, float seed){
     return frac(tan(distance(xy*phi, xy)*seed)*xy.x);
 }
 
+float random_range(float x, float y) {
+    return rand_f * (y - x) + x;
+}
+
+
+float noise(float2 xy, float seed) {
+    if (NOISE_FUNCTION == 0) {
+        return gold_noise(xy, seed);
+    } else if (NOISE_FUNCTION == 1) {
+        return random_range(xy.x, xy.y);
+    }
+
+    return gold_noise(xy, seed);
+}
+
 float2 uv_adjustment(float2 uv) {
-    if (UV_CALC == 1) {
+    if (UV_CALC == 0) {
         return frac(uv * ZOOM) - WONK;
-    } else if (UV_CALC == 2) {
+    } else if (UV_CALC == 1) {
         return abs(uv * ZOOM) - WONK;
-    } else if (UV_CALC == 3) {
+    } else if (UV_CALC == 2) {
         return (uv * ZOOM) - WONK;
     } else {
         return frac(uv * ZOOM) - WONK;  // fallback
@@ -173,27 +212,29 @@ float2 uv_adjustment(float2 uv) {
 }
 
 float length_calculation(float2 uv) {
-    if (MODE_A == 1) {
+    if (SELECT_LENGTH_CALC == 0) {
         return length(uv); // length from center, o.g.
-    } else if (MODE_A == 2) {
+    } else if (SELECT_LENGTH_CALC == 1) {
         return abs(uv.x); // horizontal
-    } else if (MODE_A == 3) {
+    } else if (SELECT_LENGTH_CALC == 2) {
         return abs(uv.y); // vertical
-    } else if (MODE_A == 4) {
+    } else if (SELECT_LENGTH_CALC == 3) {
         return uv.x * uv.y; // crosshatch
-    } else {
-        return length(uv) + gold_noise(uv, 1.) * 10; // irregularity
+    } else if (SELECT_LENGTH_CALC == 4) {
+        return length(uv) + noise(uv, 1.) * 10; // irregularity
     }
+
+    return length(uv); // fallback
 }
 
 float fade_calculation(float uv0) {
-    if (MODE_B == 1) {
+    if (SELECT_FADE_CALC == 0) {
         return exp(-length(uv0) * BURST); // exponential fade (o.g.)
-    } else if (MODE_B == 2) {
+    } else if (SELECT_FADE_CALC == 1) {
         return 1 / (1.0 + length(uv0) * BURST); // Inverse-linear decay
-    } else if (MODE_B == 3) {
+    } else if (SELECT_FADE_CALC == 2) {
         return 1 / (1.0 + length(uv0) * length(uv0) * BURST); // Quadratic decay
-    } else if (MODE_B == 4) {
+    } else if (SELECT_FADE_CALC == 3) {
         float decayFactor = sin(time * 0.5) * 0.5 + 1.0; // Dynamic decay
         return exp(-length(uv0) * BURST * decayFactor);
     } else {

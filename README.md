@@ -23,6 +23,10 @@ Full resolution screen caps of these and other shaders under the `/showcase` fol
 
 <img src="showcase/warpspeed-demo.png" alt="Warpspeed Shader" width="400">
 
+### So many options
+
+<img src="showcase/so-many-options.png" alt="Options of Kaleidoscope" width="400">
+
 ## Acknowledgements
 
 Special thanks to SkeletonBow. Withtout their overwhelming contributions, this guide wouldn't have
