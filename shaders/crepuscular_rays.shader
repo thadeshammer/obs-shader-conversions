@@ -1,6 +1,8 @@
 // Requested by PocoAgitato on Nutty's Discord
 // EXPERIMENTAL
 
+// CC-0
+
 // Made for obs-shaderfilter by thades - 2025.01.31
 // https://twitch.tv/thadeshammer
 // https://bsky.app/profile/thadeshammer.bsky.social

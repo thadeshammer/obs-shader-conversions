@@ -1,6 +1,10 @@
 // https://www.shadertoy.com/view/MdyGzR
 // by ehj1 2016.01.16
 
+// Subject to Shadertoy's Default License CC BY-NC-SA 3.0
+// https://www.shadertoy.com/terms
+// https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en
+
 // converted for obs-shaderfilter by thades
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
