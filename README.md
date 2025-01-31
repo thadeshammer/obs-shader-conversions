@@ -314,6 +314,10 @@ in-shader noise generation. By nature this is inferior to the image technique, b
 enough in my experience. I've taken to using a Golden Ratio indexer, adapted from [this
 StackOverflow post](https://stackoverflow.com/a/28095165/19677371).
 
+Note that `obs-shaderfilter` also has `rand_f` - a random value between 0. and 1., per the docs -
+but in my experience it's extremely random, and most shaders want more predictable while varied
+noise. Your mileage may vary using this one.
+
 ```cpp
 // Gold Noise ©2015 dcerisano@standard3d.com
 // - based on the Golden Ratio
