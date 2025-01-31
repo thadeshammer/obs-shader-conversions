@@ -23,8 +23,13 @@ uniform float END_FADE <
     float step = 0.01;
 > = 0.;
 
-uniform string NOTE<
-    string label = "NOTE";
+uniform string INFO<
+    string label = " ";
+    string widget_type = "info";
+> = "This shader Will make rays for anything that's bright white. Use supplementary FX and color correction if desired.";
+
+uniform string ADDITIONL_INFO<
+    string label = " ";
     string widget_type = "info";
 > = "Edit the source file itself to make additional adjustments.";
 
