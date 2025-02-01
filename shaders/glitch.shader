@@ -18,7 +18,7 @@ uniform float glitch_speed<
     string widget_type = "slider";
     float minimum = 0.0;
     float maximum = 1.0;
-    float step = 0.1;
+    float step = 0.01;
 > = 0.6; //0 - 1 speed
 
 uniform float slice_height<
@@ -45,8 +45,14 @@ float insideRange(float v, float bottom, float top) {
 
 float4 mainImage(VertData v_in) : TARGET
 {
-    
-    float time = floor(elapsed_time * glitch_speed * 60.0); // hardcoded for 60FPS I believe
+    // If elapsed_time gets very large, it starts losing precision (as it's a float) and then the
+    // tiny variations it needs for the glitch will vanish; which is why it freezes up if OBS is
+    // left running for a long time.    
+    // float time = floor(elapsed_time * glitch_speed * 60.0);
+
+    // We can essentially lock elapsed time to always be < 10000 seconds so as to avoid this.
+    float time = floor(frac(elapsed_time * 0.0001) * 10000.0 * glitch_speed * 60.0);
+
 	float2 uv = v_in.uv;
     
     //copy orig
