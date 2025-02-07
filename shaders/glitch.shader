@@ -4,24 +4,41 @@
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
 
-//inputs
-uniform float glitch_amount<
-    string label = "Offset";
+
+uniform float glitch_amount <
+    string label = "Offset Scaler";
     string widget_type = "slider";
     float minimum = 0.0;
     float maximum = 5.0;
-    float step = 0.1;
-> = 0.2; //0 - 1 glitch amount
+    float step = 0.01;
+> = 0.2;
 
-uniform float glitch_speed<
+uniform float vertical_offset <
+    string label = "Vertical Offset";
+    string widget_type = "slider";
+    float minimum = 0.;
+    float maximum = 5.;
+    float step = .001;
+> = 0.;
+
+uniform float horizontal_offset <
+    string label = "Horizontal Offset";
+    string widget_type = "slider";
+    float minimum = 0.;
+    float maximum = 5.;
+    float step = .001;
+> = 1.;
+
+
+uniform float glitch_speed <
     string label = "Speed";
     string widget_type = "slider";
     float minimum = 0.0;
     float maximum = 1.0;
     float step = 0.01;
-> = 0.6; //0 - 1 speed
+> = 0.6;
 
-uniform float slice_height<
+uniform float slice_height <
     string label = "Slice Height";
     string widget_type = "slider";
     float minimum = 0.0;
@@ -60,12 +77,17 @@ float4 mainImage(VertData v_in) : TARGET
     
     //randomly offset slices horizontally
     float maxOffset = glitch_amount/2.0;
+    float maxHOffset = maxOffset * horizontal_offset;
+    float maxVOffset = maxOffset * vertical_offset;
     for (float i = 0.0; i < 10.0 * glitch_amount; i += 1.0) {
         float sliceY = random2d(float2(time , 2345.0 + float(i)));
         float sliceH = random2d(float2(time , 9035.0 + float(i))) * slice_height;
-        float hOffset = randomRange(float2(time , 9625.0 + float(i)), -maxOffset, maxOffset);
+
+        float hOffset = randomRange(float2(time , 9625.0 + float(i)), -maxHOffset, maxHOffset);
+        float vOffset = randomRange(float2(time , 9625.0 + float(i)), -maxVOffset, maxVOffset);
         float2 uvOff = uv;
         uvOff.x += hOffset;
+        uvOff.y += vOffset;
         if (insideRange(uv.y, sliceY, frac(sliceY+sliceH)) == 1.0 ){
         	outCol = image.Sample(textureSampler, uvOff);
         }
