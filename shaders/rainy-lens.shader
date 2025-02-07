@@ -154,11 +154,13 @@ float4 mainImage( VertData v_in ) : TARGET {
 	float2 uv = (fragCoord.xy-.5*uv_size.xy) / uv_size.y;
     float2 UV = fragCoord.xy/uv_size.xy;
 
-    float T = elapsed_time;    
-    float t = T*.2;
+    // similar to glitch.shader pre-patch, this shader also degrades overtime as OBS remains up.
+    // After two days up, this shader was extremely obviously periodic (one uniform surge of drops
+    // racing down the window per second, roughly) but the fix eludes me still.
+    float time = elapsed_time;    
+    float t = time *.2;
     
-    // float rainAmount = sin(T*.05)*.3+.7;
-    float rainAmount = sin(T*.05) *.3 + .7;
+    float rainAmount = sin(time * .05) *.3 + .7;
     
     float maxBlur = lerp(3., 6., rainAmount);
     float minBlur = 2.;
@@ -192,10 +194,10 @@ float4 mainImage( VertData v_in ) : TARGET {
     if (FILM_NOIR) {
         // Note the lightning and vignette only work with the greyscale and is very noir, so I
         // ultimately didn't tease them apart.
-        t = (T+3.)*.5;										// make time sync with first lightnoing
+        t = (time + 3.) * .5;										// make time sync with first lightnoing
         float colFade = sin(t*.2)*.5+.5+story;
         col = mul(lerp(float3(1., 1., 1.), float3(.8, .9, 1.3), colFade), col);	// subtle color shift
-        float fade = S(0., 10., T);							            // fade in at the start
+        float fade = S(0., 10., time);							            // fade in at the start
         float lightning = sin(t*sin(t*10.));				            // lighting flicker
         lightning *= pow(max(0., sin(t+sin(t))), 10.);		            // lightning flash
         col = mul(1.+lightning*fade*lerp(1., .1, story*story), col);	// composite lightning
