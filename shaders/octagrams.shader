@@ -9,6 +9,18 @@
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
 
+uniform float4 primary_color<
+    string label = "Primary Color";
+> = {0.0, 1.0, 0.0, 1.0};
+
+uniform int iterations <
+    string label = "Iterations";
+    string widget_type = "slider";
+    int minimum = 1;
+    int maximum = 300;
+    int step = 1;
+> = 100;
+
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
 float2x2 rot(float a) {
@@ -65,13 +77,6 @@ float box_set(float3 pos, float time) {
 	return result;
 }
 
-float map(float3 pos, float time) {
-    // does this need to still exist? just a pass thru
-	float box_set1 = box_set(pos, time);
-	return box_set1;
-}
-
-
 float4 mainImage( VertData v_in ) : TARGET {
     float time = elapsed_time;
 
@@ -81,24 +86,23 @@ float4 mainImage( VertData v_in ) : TARGET {
 	ray.xy = mul(rot(sin(time * .03) * 5.), ray.xy);
 	ray.yz = mul(rot(sin(time * .05) * .2), ray.yz);
 	float t = 0.1;
-	float3 col = float3(0., 0., 0.);
 	float ac = 0.0;
 
-
-	for (int i = 0; i < 99; i++){
+	for (int i = 0; i < iterations; i++) {
 		float3 pos = ro + mul(t, ray);
 		pos = mod(pos-2., 4.) -2.;
 		
-		float d = map(pos, time);
+		float d = box_set(pos, time);
 
 		d = max(abs(d), 0.01);
-		ac += exp(-d*23.);
+        ac += exp(-d * 23.);
 
 		t += d* 0.55;
 	}
 
-	col = float3(ac * .02, ac * .02, ac * .02);
-	col += float3(0., .2 * abs(sin(time)), .5 + sin(time) * .2);
-
-	return float4(col, 1.0 - t * (0.02 + 0.02 * sin (time)));
+    float3 col = float3(ac, ac, ac);
+    col *= primary_color.xyz;
+    col *= float3(.02, .02, .02);
+    col += float3(.2 * abs(sin(time)), .2 * abs(sin(time)), abs(sin(time)) * .2);
+	return float4(col.xyz, 1.0 - t * (0.02 + 0.02 * sin (time)));
 }
