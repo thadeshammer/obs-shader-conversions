@@ -376,16 +376,17 @@ uniform string Notes<
 
 When you encounter the following keywords or operators in a GLSL shader you're trying to convert, replace them thus:
 
-| replace                     | with                           | notes                                                           |
-| --------------------------- | ------------------------------ | --------------------------------------------------------------- |
-| `flt_a * matrix_b`          | `mul(flt_a, matrix_b)`         | Use `mul()` for matrix multiplication. Mind row vs col major.   |
-| `atan(y,x)`                 | `atan2(x,y)`                   | Arguments reversed here in HLSL.                                |
-| `dFdx()` and `dFdy()`       | `ddx()` and `ddy()`            |                                                                 |
-| `fract()`                   | `frac()`                       |                                                                 |
-| `fragCoord`, `gl_fragCoord` | `v_in.pos`                     | The y-axis is inverted here from GLSL, see associated section.  |
-| `iResolution`               | `uv_size`                      | The y-axis is inverted here from GLSL, see `fragCoord` section. |
-| `iTime`                     | `elapsed_time`                 |                                                                 |
-| `matN`                      | `floatNxN`                     |                                                                 |
-| `mix()`                     | `lerp()`                       |                                                                 |
-| `texelFetch(t, v, m)`       | `image.Sample(textureSampler)` | See associated section.                                         |
-| `vecN`                      | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)` |
+| replace                     | with                           | notes                                                                                                                                                     |
+| --------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `flt_a * matrix_b`          | `mul(flt_a, matrix_b)`         | Use `mul()` for matrix multiplication. Mind row vs col major.                                                                                             |
+| `atan(y,x)`                 | `atan2(x,y)`                   | Arguments reversed here in HLSL.                                                                                                                          |
+| `dFdx()` and `dFdy()`       | `ddx()` and `ddy()`            |                                                                                                                                                           |
+| `fract()`                   | `frac()`                       |                                                                                                                                                           |
+| `fragCoord`, `gl_fragCoord` | `v_in.pos`                     | The y-axis is inverted here from GLSL, see associated section.                                                                                            |
+| `iResolution`               | `uv_size`                      | The y-axis is inverted here from GLSL, see `fragCoord` section.                                                                                           |
+| `iTime`                     | `elapsed_time`                 |                                                                                                                                                           |
+| `matN`                      | `floatNxN`                     |                                                                                                                                                           |
+| `mix()`                     | `lerp()`                       |                                                                                                                                                           |
+| `precision`                 | n/a                            | HLSL doesn't have an equivalent here, these specifies can be omitted BUT you may need to evaluate how floats are handled throughout the shader otherwise. |
+| `texelFetch(t, v, m)`       | `image.Sample(textureSampler)` | See associated section.                                                                                                                                   |
+| `vecN`                      | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)`                                                                                           |
