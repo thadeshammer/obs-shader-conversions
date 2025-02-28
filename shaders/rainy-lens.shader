@@ -24,6 +24,14 @@ uniform float ZOOM_AMOUNT <
     float step = 0.01;
 > = 1.;
 
+uniform float SPEED <
+    string label = "speed (1.0)";
+    string widget_type = "slider";
+    float minimum = .01;
+    float maximum = 10.;
+    float step = .01;
+> = 1.;
+
 uniform float BRIGHTNESS <
     string label = "Brightness (-0.33)";
     string widget_type = "slider";
@@ -157,7 +165,7 @@ float4 mainImage( VertData v_in ) : TARGET {
     // similar to glitch.shader pre-patch, this shader also degrades overtime as OBS remains up.
     // After two days up, this shader was extremely obviously periodic (one uniform surge of drops
     // racing down the window per second, roughly) but the fix eludes me still.
-    float time = elapsed_time;    
+    float time = elapsed_time * SPEED;    
     float t = time *.2;
     
     float rainAmount = sin(time * .05) *.3 + .7;

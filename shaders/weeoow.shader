@@ -8,10 +8,6 @@
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
 
-uniform bool REDUCE_COLOR_SPACE <
-    string label = "11-bit color mode";
-> = false;
-
 uniform float F2 <
     string label = "wee (0.366)";
     string widget_type = "slider";
@@ -35,6 +31,22 @@ uniform float SPEED <
     float maximum = 10.;
     float step = .01;
 > = 1.;
+
+uniform bool TRIST_MODE<
+    string label = "trist";
+> = false;
+
+uniform float TRIST_SENSITIVITY <
+    string label = "trist? (1.0)";
+    string widget_type = "slider";
+    float minimum = 0.;
+    float maximum = 1.;
+    float step = .01;
+> = .5;
+
+uniform bool REDUCE_COLOR_SPACE <
+    string label = "11-bit color mode";
+> = false;
 
 #define PI 3.14159
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
@@ -126,13 +138,15 @@ float4 mainImage( VertData v_in ) : TARGET
         varazslat(uv * .4, iTime + .7)
     );
     
+    color = float3(pow(color.r, 0.45), pow(color.g, 0.45), pow(color.b, 0.45));
     if (REDUCE_COLOR_SPACE) {
-        return float4(convertRGB443(color),1.0);
-    } else {
-        color = float3(pow(color.r, 0.45), pow(color.g, 0.45), pow(color.b, 0.45));
-        return float4(color, 1.0);
+        color = convertRGB443(color);
     }
-    
-    // return float4(1,0,0,1);
+
+    if (TRIST_MODE && length(color) <= TRIST_SENSITIVITY) {
+        color = image.SampleLevel(textureSampler, v_in.uv, 1.).rgb;
+    }
+
+    return float4(color.rgb, 1.);
 }
 
