@@ -20,6 +20,14 @@ uniform float G2 <
     float step = .001;
 > = -0.2113249;
 
+uniform float SPEED <
+    string label = "speed (1.0)";
+    string widget_type = "slider";
+    float minimum = .01;
+    float maximum = 10.;
+    float step = .01;
+> = 1.;
+
 #define PI 3.14159
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
 
@@ -80,7 +88,7 @@ float4 mainImage( VertData v_in ) : TARGET
 {
     float2 iResolution = uv_size * uv_scale;
     float2 fragCoord = float2(v_in.pos.x, uv_size.y - v_in.pos.y); // flip y-axis GLSL -> HLSL
-    float iTime = elapsed_time;
+    float iTime = elapsed_time * SPEED;
 
 	float2 uv = fragCoord.xy / iResolution.xy; 
     uv = (uv-.5)*2.;
