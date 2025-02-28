@@ -1,5 +1,13 @@
 // https://www.shadertoy.com/view/ldBSRd
 
+// Subject to Shadertoy's Default License CC BY-NC-SA 3.0
+// https://www.shadertoy.com/terms
+// https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en
+
+// Converted for obs-shaderfilter by thades
+// https://twitch.tv/thadeshammer
+// https://github.com/thadeshammer/obs-shader-conversions
+
 uniform bool REDUCE_COLOR_SPACE <
     string label = "11-bit color mode";
 > = false;

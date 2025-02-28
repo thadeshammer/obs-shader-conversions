@@ -13,7 +13,9 @@
 // Add Additional Characters with this tool: http://thrill-project.com/archiv/coding/bitmap/
 // converts a bitmap into int then decodes it to look like text
 
-
+// thades added movAX13h's o.g. full character set 2025-02-27
+// https://twitch.tv/thadeshammer
+// https://github.com/thadeshammer/obs-shader-conversions
 
 uniform int scale<
     string label = "Scale";
