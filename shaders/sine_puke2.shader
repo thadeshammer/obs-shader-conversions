@@ -23,12 +23,20 @@ uniform float WARP_INTENSITY <
 > = .6;
 
 uniform float GAMMA <
-    string label = "GAMMA (2.2)";
+    string label = "Gamma (2.2)";
     string widget_type = "slider";
     float minimum = .005.;
     float maximum = 3.;
     float step = .001;
 > = 2.2;
+
+uniform float SPEED  <
+    string label = "Speed (1.0)";
+    string widget_type = "slider";
+    float minimum = .01.;
+    float maximum = 5.;
+    float step = .01;
+> = 1.;
 
 
 float3 spectral_colour(float l) // RGB <0,1> <- lambda l <400,700> [nm]
@@ -57,7 +65,7 @@ float3 spectral_palette(float x) { return spectral_colour(x*300.0+400.0); }
 float4 mainImage(VertData v_in) : TARGET
 {
 	float2 p=(2.0*v_in.pos.xy-uv_size.xy)/max(uv_size.x,uv_size.y);
-    float t = elapsed_time;
+    float t = elapsed_time * SPEED;
 
 	for(int i=1; i<50; i++)
 	{
