@@ -18,6 +18,14 @@ uniform int SNOWFLAKE_COUNT <
     int step = 1;
 > = 200;
 
+uniform float SPEED_FACTOR <
+    string label = "Speed (0.3)";
+    string widget_type = "slider";
+    float minimum = 0.;
+    float maximum = 1.;
+    float step = .001;
+> = .3;
+
 uniform float SNOW_INTENSITY <
     string label = "Intensity (.2)";
     string widget_type = "slider";
@@ -62,7 +70,7 @@ float4 mainImage(VertData v_in) : TARGET
         j = float(i);
 
         float noise = rnd(cos(j));
-        float speed = 0.3 + noise * (0.7+0.5*cos(j/(float(SNOWFLAKE_COUNT)*0.25)));
+        float speed = SPEED_FACTOR * noise * (0.7+0.5*cos(j/(float(SNOWFLAKE_COUNT)*0.25)));
         float2 center = 
             float2(
                 (0.25-uv.y)*SNOW_INTENSITY+rnd(j)+0.1*cos(time+sin(j)),
