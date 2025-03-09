@@ -41,7 +41,11 @@ uniform int character_set<
     int    option_1_value = 1;
     string option_1_label = "Small set of capital letters";
     int    option_2_value = 2;
-    string option_2_label = "Full set including A-Z and 0-9";
+    string option_2_label = "Full alphabet";
+    int    option_3_value = 3;
+    string option_3_label = "thades mode - simple";
+    int    option_4_value = 4;
+    string option_4_label = "thades mode - extra";
 > = 0;
 
 uniform string note<
@@ -50,12 +54,24 @@ uniform string note<
 
 float character(int n, float2 p)
 {
+    // n (int): packed bitmap representing a character in an int; the bitmap is 5x5; see
+    //          http://thrill-project.com/archiv/coding/bitmap/
+    //          https://blog.thrill-project.com/ascii-art-shader/
+    // p (float2): the pixel's position on the quad
+
+    // scale and align the pixel coordinates to match the 5x5 grid
     p = floor(p*float2(4.0, 4.0) + 2.5);
+
     if (clamp(p.x, 0.0, 4.0) == p.x)
     {
         if (clamp(p.y, 0.0, 4.0) == p.y)	
         {
-	    int a = int(round(p.x) + 5.0 * round(p.y));
+            // Convert (x, y) grid coordinates into a bit position (0 to 24).
+	        int a = int(round(p.x) + 5.0 * round(p.y));
+            // ((n >> a) & 1) extracts bit as position a
+            // n >> a shifts bits of n right by a positions
+            // & 1 isolates the least significant bit
+            // if it's 1 return 1.0, else fall out and return 0.0
             if (((n >> a) & 1) == 1) return 1.0;
         }	
     }
@@ -76,9 +92,9 @@ float4 mainImage( VertData v_in ) : TARGET
     float gray = 0.3 * c.r + 0.59 * c.g + 0.11 * c.b;
 	
     int n;
-    int charset = clamp(character_set, 0, 2);
+    // int charset = clamp(character_set, 0, 2);
 
-    if (charset==0) {
+    if (character_set==0) {
         if (gray <= 0.2) n = 4096;     // .
         if (gray > 0.2)  n = 65600;    // :
         if (gray > 0.3)  n = 332772;   // *
@@ -87,14 +103,14 @@ float4 mainImage( VertData v_in ) : TARGET
         if (gray > 0.6)  n = 15252014; // 8
         if (gray > 0.7)  n = 13199452; // @
         if (gray > 0.8)  n = 11512810; // #
-    } else if (charset==1) {
+    } else if (character_set==1) {
         if (gray <= 0.1) n = 0;
         if (gray > 0.1)  n = 9616687; // R
         if (gray > 0.3)  n = 32012382; // S
         if (gray > 0.5)  n = 16303663; // D
         if (gray > 0.7)  n = 15255086; // O
         if (gray > 0.8)  n = 16301615; // B
-    } else if (charset==2) {
+    } else if (character_set==2) {
         // full character set including A-Z and 0-9
         if (gray > 0.0233) n = 4096;
         if (gray > 0.0465) n = 131200;
@@ -138,6 +154,39 @@ float4 mainImage( VertData v_in ) : TARGET
         if (gray > 0.9302) n = 32045630;
         if (gray > 0.9535) n = 33061407;
         if (gray > 0.9767) n = 11512810;
+    } else if (character_set == 3) {
+        // thades mode
+        if (gray > 0.0)  n = 0;     // .
+        if (gray > 0.12)  n = 131072;     // :
+        if (gray > 0.25)  n = 19267584;     // o
+        if (gray > 0.38)  n = 27398528;     // &
+        if (gray > 0.5)  n = 11513856;     // #
+        if (gray > 0.62)  n = 19286976;     // 8
+        if (gray > 0.75)  n = 31045632;     // @
+        if (gray > 0.88)  n = 5241984;     // *
+    } else if (character_set == 4) {
+        // thades mode extra
+        if (gray > 0.0)  n = 0;     // .
+        if (gray > 0.05)  n = 131072;     // :
+        if (gray > 0.1)  n = 4325376;     // ¿
+        if (gray > 0.14)  n = 19267584;     // o
+        if (gray > 0.19)  n = 983040;     // ~
+        if (gray > 0.24)  n = 2164768;     // \
+        if (gray > 0.29)  n = 19464192;     // µ
+        if (gray > 0.33)  n = 4329664;     // 1
+        if (gray > 0.38)  n = 10944512;     // ¤
+        if (gray > 0.43)  n = 11411456;     // ¢
+        if (gray > 0.48)  n = 27398528;     // &
+        if (gray > 0.52)  n = 10684608;     // §
+        if (gray > 0.57)  n = 9741504;     // Ω
+        if (gray > 0.62)  n = 11513856;     // #
+        if (gray > 0.67)  n = 33488896;     // æ
+        if (gray > 0.71)  n = 19286976;     // 8
+        if (gray > 0.76)  n = 31045632;     // @
+        if (gray > 0.81)  n = 5220896;     // ¥
+        if (gray > 0.86)  n = 5241984;     // *
+        if (gray > 0.9)  n = 10857952;     // ¶
+        if (gray > 0.95)  n = 16371136;     // ☺
     }
 
     float2 p = mod(pix/float2(scale*4.0,scale*4.0),float2(2.0,2.0)) - float2(1.0,1.0);
