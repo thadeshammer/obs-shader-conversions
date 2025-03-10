@@ -9,6 +9,31 @@
 // https://twitch.tv/thadeshammer
 // https://github.com/thadeshammer/obs-shader-conversions
 
+uniform float4 CONTRAST_ANCHOR <
+    string label = "base";
+> = {.7, .7, .7, 1.};
+
+uniform float4 BASE_COLOR <
+    string label = "highlight";
+> = {.45, .4, .6, 1.};
+
+uniform float BRIGHTNESS <
+    string label = "bright (0.6)";
+    string widget_type = "slider";
+    float minimum = 0;
+    float maximum = 1;
+    float step = .01;
+> = .6;
+
+uniform float ENERGY <
+    string label = "speed (0.05)";
+    string widget_type = "slider";
+    float minimum = 0;
+    float maximum = 10;
+    float step = .01;
+> = .05;
+
+
 float rand(float2 coords)
 {
 	return frac(sin(dot(coords, float2(56.3456, 78.3456)) * 5.0) * 10000.0);
@@ -46,9 +71,9 @@ float fbm(float2 coords)
 
 float value(float2 uv)
 {
-    float Pixels = 1024.0;
-    float dx = 10.0 * (1.0 / Pixels);
-    float dy = 10.0 * (1.0 / Pixels);
+    float pixels = 1024.0;
+    float dx = 10.0 * (1.0 / pixels);
+    float dy = 10.0 * (1.0 / pixels);
   
 
     float final = 0.0;
@@ -61,7 +86,7 @@ float value(float2 uv)
     
     for (int i =0;i < 3; i++)
     {
-        float q = fbm(Coord + elapsed_time * 0.05 + float2(i, i));
+        float q = fbm(Coord + elapsed_time * ENERGY + float2(i, i));
         float2 motion = float2(q, q);
         final += fbm(Coord + motion + float2(i, i));
     }
@@ -83,5 +108,15 @@ float4 mainImage( VertData v_in ) : TARGET
 {
     float2 uv = transform_and_normalize_uv(v_in.pos);
     
-	return float4(lerp(float3(-0.3, -0.3, -0.3), float3(0.45, 0.4, 0.6) + float3(0.6, 0.6, 0.6), value(uv)), 1);
+    float3 contrast_value = mul(-1, float3(1. - CONTRAST_ANCHOR.r, 1. - CONTRAST_ANCHOR.g, 1. - CONTRAST_ANCHOR.b));
+    float3 brightness = float3(BRIGHTNESS, BRIGHTNESS, BRIGHTNESS);
+
+    float3 target_color = BASE_COLOR + BRIGHTNESS;
+    float total = target_color.r + target_color.g + target_color.b;
+    if (total > 1.0) {
+        // preserve brightness / color blance and scale down proportionally.
+        target_color /= total;
+    }
+
+    return float4(lerp(contrast_value, BASE_COLOR + BRIGHTNESS, value(uv)), 1);
 }
