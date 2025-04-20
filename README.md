@@ -390,3 +390,64 @@ When you encounter the following keywords or operators in a GLSL shader you're t
 | `precision`                 | n/a                            | HLSL doesn't have an equivalent here, these specifies can be omitted BUT you may need to evaluate how floats are handled throughout the shader otherwise. |
 | `texelFetch(t, v, m)`       | `image.Sample(textureSampler)` | See associated section.                                                                                                                                   |
 | `vecN`                      | `floatN`                       | `float4(0.,)` must be replaced with `float(0.0, 0.0, 0.0, 0.0)`                                                                                           |
+
+### My Process
+
+_These notes are really for me, but maybe you'll find them helpful as well. Explanations for each
+are detailed above, this is just my process._
+
+- Make sure the very first line is a comment `#` and NOT a `#define`.
+- Remove all `const`.
+- One-for-one replacements:
+
+  - Replace all `vec` with `float`.
+  - Replace all `matN` with `floatNxN`.
+  - Replace all `mix` with `lerp` (or use a `#define`).
+  - Replace all `fract` with `frac` (or use a `#define`).
+
+- Look out for scalar splatting, i.e. `floatN(v)` must be converted to `floatN(v, v, v)`.
+- Look out for global variables, those are a no-go for OBS's HLSL.
+
+  - Need to either:
+    - make them `uniform`, OR
+    - make them `#define`, OR
+    - define these in main and pass them through.
+
+- Refactor the main function signature:
+
+  - return value should be `float4`.
+  - mainImage only takes on argument, type `VertData`.
+  - append `: TARGET`.
+
+  ```cpp
+  float4 mainImage(VertData: v_in) : TARGET
+  ```
+
+- Watch out for `#define` statements with parentheses. The OBS HLSL parser hates these in defines.
+
+  ```cpp
+  // This will result in an 'Expected Identifier' error:
+  #define TAU             (2.0 * PI)
+  // This will work:
+  #define TAU             2.0 * PI
+  ```
+
+- Refactor function-style macros into functions, e.g.
+
+  ```cpp
+  // this:
+  #define mrot(a) float2x2(cos(a), sin(a), -sin(a), cos(a))
+
+  // becomes this:
+  float2x2 mrot(float a) {
+  return float2x2(cos(a), sin(a), -sin(a), cos(a));
+  }
+  ```
+
+- Debugging passes:
+
+  - Add `return float4(1, 0, 0, 1);` (every pixel is red) at end of `mainImage()` function.
+  - Comment out every other line in `mainImage` and verify it works (an all red viewport).
+  - Steadily uncomment a bit at a time, commenting into functions as necessary, to track errors.
+  - This will all get easier once they merge that Exeldro patch; or whenever I belly up to the bar
+    and build my own custom fork of OBS with that patch.
