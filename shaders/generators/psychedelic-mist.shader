@@ -9,25 +9,34 @@
 // The o.g. author recommends that you set BPM to that matches your music.
 // I renamed this to strobe because of the obvious epilepsy risk.
 uniform float BPM <
-    string label = "strobe";
-    string widget_type = "slider";
-    float minimum = 1.0;
-    float maximum = 300.0;
-    float step = 1.0;
+  string label = "strobe";
+  string widget_type = "slider";
+  float minimum = 1.0;
+  float maximum = 300.0;
+  float step = 1.0;
 > = 30.0;
 
 uniform bool GAMMAWEIRDNESS <
-    string label = "gamma weirdness";
+  string label = "gamma weirdness";
 > = true;
         
 uniform bool QUINTIC <
-    string label = "quintic";
+  string label = "quintic";
 > = true;
 
 #define PI              3.141592654
 #define TAU             2.0 * PI
-#define TIME            elapsed_time
+// #define TIME            elapsed_time
 #define RESOLUTION      uv_size.xy
+
+#define mod(x,y) ((x) - (y) * floor((x)/(y)))
+
+float time() {
+  // handle long-term running OBS precision loss
+  // 15mn wrap cycle
+  float fixed = mod(elapsed_time, 900.);
+  return fixed;
+}
 
 float2x2 mrot(float a) {
   return float2x2(cos(a), sin(a), -sin(a), cos(a));
@@ -141,7 +150,7 @@ float height(float2 p, float n, out float2 diff, float2x2 rotSome) {
     d += abs(an);
     pn = mul(pn * ppn, rotSome);
     an *= aan; 
-    pn += (3.0*float(i+1))*s-TIME*5.5;     // Fake warp FBM
+    pn += (3.0 * float(i + 1)) * s - time() * 5.5;     // Fake warp FBM
   }
 
   s /= d;
@@ -171,7 +180,7 @@ float4 plane(float3 ro, float3 rd, float3 pp, float aa, float n, float2x2 rotSom
   float brin = h;
   col = hsv2rgb(float3(huen, satn, brin));
   
-  float t = sqrt(h)*(smoothstep(0.0, 0.5, length(pp - ro)))*smoothstep(0.0, lerp(0.4, 0.75, pow(psin(TIME*TAU*BPM/60.0), 4.0)), length(p));
+  float t = sqrt(h)*(smoothstep(0.0, 0.5, length(pp - ro)))*smoothstep(0.0, lerp(0.4, 0.75, pow(psin(time()*TAU*BPM/60.0), 4.0)), length(p));
   return float4(col, t);
 }
 
@@ -243,7 +252,7 @@ float3 postProcess(float3 col, float2 q)  {
 }
 
 float3 effect(float2 p, float2 q, float2x2 rotSome, float3 std_gamma) {
-  float tm = TIME;
+  float tm = time();
   float3 ro   = offset(tm);
   float3 dro  = doffset(tm);
   float3 ddro = ddoffset(tm);
