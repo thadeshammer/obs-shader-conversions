@@ -99,9 +99,6 @@ float3 offset(float z) {
   return float3(p, z);
 }
 
-// float3 offset(float z) {
-//   return offset_1(z);
-// }
 
 float3 doffset(float z) {
   float eps = 0.1;
@@ -188,8 +185,9 @@ float tanh_approx(float x) {
 float3 color(float3 ww, float3 uu, float3 vv, float3 ro, float2 p, float2x2 rotSome, float3 std_gamma) {
   float lp = length(p);
   // vestigial alternate math, haven't dug into why yet. -thades
-//  float3 rd = normalize(p.x*uu + p.y*vv + (3.00-1.0*tanh(lp))*ww);
-  float3 rd = normalize(p.x*uu + p.y*vv + (2.00+tanh_approx(lp))*ww);
+  float3 rd = normalize(p.x*uu + p.y*vv + (3.00-1.0*tanh(lp))*ww);
+
+  // float3 rd = normalize(p.x*uu + p.y*vv + (2.00+tanh_approx(lp))*ww);
 
   float planeDist = 1.0-0.25;
   int furthest = 6;
