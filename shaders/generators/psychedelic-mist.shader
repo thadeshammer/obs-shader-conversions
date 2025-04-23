@@ -8,25 +8,67 @@
 
 // The o.g. author recommends that you set BPM to that matches your music.
 // I renamed this to strobe because of the obvious epilepsy risk.
-uniform float BPM <
-  string label = "strobe";
+
+uniform float SPEED <
+  string label = "speed (0.5)";
   string widget_type = "slider";
-  float minimum = 1.0;
-  float maximum = 300.0;
-  float step = 1.0;
-> = 30.0;
+  float minimum = 0.;
+  float maximum = 5.;
+  float step = 0.01;
+> = 0.5;
+
+uniform float FBM_MD <
+  string label = "basic fbm loops (1.0)";
+  string widget_type = "slider";
+  float minimum = 1.;
+  float maximum = 5.;
+  float step = 1.;
+> = 1.;
+
+uniform float FBM_MX <
+  string label = "warped fbm loops (4.0)";
+  string widget_type = "slider";
+  float minimum = 1.;
+  float maximum = 15.;
+  float step = 1.;
+> = 4.;
 
 uniform bool GAMMAWEIRDNESS <
   string label = "gamma weirdness";
-> = true;
+> = false;
         
 uniform bool QUINTIC <
   string label = "quintic";
 > = true;
 
+// this is the interesting one
+uniform float FORWARD_OFFSET <
+  string label = "forward offset (3.0)";
+  string widget_type = "slider";
+  float minimum = 0.;
+  float maximum = 15.;
+  float step = .1;
+> = 3.;
+
+// this one is 1.0 or not there
+uniform float FORWARD_BIAS <
+  string label = "forward bias (1.0)";
+  string widget_type = "slider";
+  float minimum = -1.;
+  float maximum = 1.;
+  float step = .1;
+> = 0.;
+
+uniform float BPM <
+  string label = "strobe";
+  string widget_type = "slider";
+  float minimum = 0.0;
+  float maximum = 300.0;
+  float step = 1.0;
+> = 0.0;
+
 #define PI              3.141592654
 #define TAU             2.0 * PI
-// #define TIME            elapsed_time
 #define RESOLUTION      uv_size.xy
 
 #define mod(x,y) ((x) - (y) * floor((x)/(y)))
@@ -35,7 +77,7 @@ float time() {
   // handle long-term running OBS precision loss
   // 15mn wrap cycle
   float fixed = mod(elapsed_time, 900.);
-  return fixed;
+  return fixed * SPEED;
 }
 
 float2x2 mrot(float a) {
@@ -126,17 +168,23 @@ float3 skyColor(float3 ro, float3 rd) {
 }
 
 float height(float2 p, float n, out float2 diff, float2x2 rotSome) {
-  float aan = 0.45;
-  float ppn = 2.0+0.2;
+  // fractal Brownian motion
+  // p: position
+  // n: time or depth
+  // diff: motion/direction
+  // rotSome: rotation to swirl the noise
+
+  float aan = 0.45;     // amplitude drop-off between layers
+  float ppn = 2.0+0.2;  // frequency multiplier per layer
+  float an = 1.0;       // initial amplitude
   
   float s = 0.0;
   float d = 0.0;
-  float an = 1.0;
   float2 pn = 4.0*p + n*10.0;
   float2 opn = pn;
 
-  int md = 1;
-  int mx = 4;
+  int md = FBM_MD; // 1;
+  int mx = FBM_MX; // 4;
   
   for (int i = 0; i < md; ++i) {
     s += an*(vnoise(pn)); 
@@ -156,7 +204,8 @@ float height(float2 p, float n, out float2 diff, float2x2 rotSome) {
   s /= d;
   diff = (pn - opn);
 
-  return s;
+  return smoothstep(0., 1., s);
+  // return s;
 }
 
 float4 plane(float3 ro, float3 rd, float3 pp, float aa, float n, float2x2 rotSome) {
@@ -184,19 +233,18 @@ float4 plane(float3 ro, float3 rd, float3 pp, float aa, float n, float2x2 rotSom
   return float4(col, t);
 }
 
-float tanh_approx(float x) {
-    // HLSL may not have tanh? A quick and dirty substitute.
-    float e1 = exp(x);
-    float e2 = exp(-x);
-    return (e1 - e2) / (e1 + e2);
-}
-
 float3 color(float3 ww, float3 uu, float3 vv, float3 ro, float2 p, float2x2 rotSome, float3 std_gamma) {
   float lp = length(p);
-  // vestigial alternate math, haven't dug into why yet. -thades
-  float3 rd = normalize(p.x*uu + p.y*vv + (3.00-1.0*tanh(lp))*ww);
 
-  // float3 rd = normalize(p.x*uu + p.y*vv + (2.00+tanh_approx(lp))*ww);
+  // o.g. two modes, default vs. a previously commented out alternate.
+  // I went with surfacing the offset and bias to sliders for OBS. -thades
+  // float3 rd = normalize(p.x*uu + p.y*vv + (2.00+tanh(lp))*ww);
+  // if (MODE == 1) {
+  //   // alternate math, previously commented out; I haven't dug into why yet. -thades
+  //   rd = normalize(p.x*uu + p.y*vv + (3.00-1.0*tanh(lp))*ww);
+  // }
+
+  float3 rd = normalize(p.x * uu + p.y * vv + ( FORWARD_OFFSET + FORWARD_BIAS * tanh(lp) ) * ww);
 
   float planeDist = 1.0-0.25;
   int furthest = 6;
